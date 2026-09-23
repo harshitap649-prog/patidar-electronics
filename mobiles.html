@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Mobiles | Patidar Electronics</title>
   <!-- Google Fonts & Font Awesome Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -432,8 +432,8 @@
     }
 
     @media (max-width: 767px) {
-      body { padding-bottom: 82px; }
-      .header { min-height: 64px; padding: 8px 12px; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); }
+      body { padding-bottom: 70px; }
+      .header { min-height: 60px; padding: 10px 16px; background: rgba(255,255,255,0.95); border-bottom: 1px solid #F0F0F0; backdrop-filter: blur(10px); z-index: 1000; }
       .header-top { min-height: 48px; margin-bottom: 8px; }
       .header-back, .compare-btn { min-height: 48px; border-radius: 12px; }
       .header-back { padding: 8px 10px; }
@@ -443,14 +443,14 @@
       .filters-wrapper::-webkit-scrollbar { display: none; }
       .filter-chip { min-height: 48px; border-radius: 12px; scroll-snap-align: start; }
       .main-container { padding: 16px 12px; }
-      .products-grid { display: flex; gap: 12px; overflow-x: auto; padding: 4px 2px 14px; scroll-snap-type: x mandatory; scrollbar-width: none; }
-      .products-grid::-webkit-scrollbar { display: none; }
-      .product-card { flex: 0 0 82%; scroll-snap-align: start; }
+      .products-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 0 12px; }
+      .product-card { min-width: 0; }
       .sort-select-mobile, .sort-mobile { min-height: 48px; }
       .sort-select-mobile { border-radius: 12px; }
-      .bottom-nav { display: flex; padding-bottom: calc(8px + env(safe-area-inset-bottom)); }
-      .nav-item { min-height: 54px; border-radius: 12px; position: relative; }
+      .bottom-nav { display: flex; height: 60px; padding: 0; z-index: 9999; align-items: center; }
+      .nav-item { min-height: 48px; border-radius: 12px; position: relative; transition: color 0.2s ease, background 0.2s ease; }
       .nav-item.active::before { content: ''; position: absolute; top: 2px; width: 34px; height: 4px; border-radius: 50px; background: var(--primary-red); }
+      .nav-item:active { background: #FEF2F2; transform: scale(0.96); }
       button, a { min-height: 48px; }
     }
 

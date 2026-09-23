@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Patidar Mobile & Electronics Mall | Sagore</title>
   <!-- Google Fonts & Font Awesome Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -796,8 +796,8 @@
     .mobile-app-nav { display: none; }
 
     @media (max-width: 767px) {
-      body { padding-bottom: 78px; }
-      nav { min-height: 64px; padding: 8px 14px; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); }
+      body { padding-bottom: 70px; }
+      nav { min-height: 60px; padding: 10px 16px; background: rgba(255,255,255,0.95); border-bottom: 1px solid #F0F0F0; backdrop-filter: blur(10px); z-index: 1000; }
       .nav-left { gap: 8px; }
       .brand-logo { max-width: 150px; height: 36px; }
       .menu-btn { min-height: 48px; min-width: 48px; padding: 8px 12px; border-radius: 12px; }
@@ -809,15 +809,18 @@
       .category-card { flex: 0 0 132px; border-radius: 18px; scroll-snap-align: start; }
       .category-image-wrapper { width: 112px; height: 112px; margin: 10px auto 0; border-radius: 50%; }
       .category-title { min-height: 52px; padding: 10px 7px; font-size: 0.76rem; }
-      .customers-grid { display: flex; gap: 12px; overflow-x: auto; padding: 4px 2px 12px; scroll-snap-type: x mandatory; scrollbar-width: none; }
-      .customer-card { flex: 0 0 82%; scroll-snap-align: start; }
+      .customers-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 0 12px; }
+      .customer-card { min-width: 0; }
       .claim-offer-section { scroll-margin-top: 80px; }
       .insta-section-bar { scroll-margin-top: 80px; }
-      .mobile-app-nav { position: fixed; display: flex; bottom: 0; left: 0; width: 100%; z-index: 1000; background: #FFFFFF; border-top: 1px solid #E5E7EB; padding: 8px 0 calc(8px + env(safe-area-inset-bottom)); box-shadow: 0 -4px 15px rgba(0,0,0,0.05); justify-content: space-around; }
-      .mobile-app-nav a { position: relative; display: flex; flex: 1; min-height: 54px; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #6B7280; text-decoration: none; font-size: 0.65rem; font-weight: 700; border-radius: 12px; }
+      .mobile-app-nav { position: fixed; display: flex; bottom: 0; left: 0; right: 0; width: 100%; height: 60px; z-index: 9999; background: #FFFFFF; border-top: 1px solid #E5E7EB; padding: 0; box-shadow: 0 -4px 15px rgba(0,0,0,0.05); align-items: center; justify-content: space-around; }
+      .mobile-app-nav a { position: relative; display: flex; flex: 1; min-height: 48px; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #6B7280; text-decoration: none; font-size: 0.65rem; font-weight: 700; border-radius: 12px; transition: color 0.2s ease, background 0.2s ease; }
       .mobile-app-nav a i { font-size: 1.05rem; }
       .mobile-app-nav a.active { color: #E52321; }
       .mobile-app-nav a.active::before { content: ''; position: absolute; top: 2px; width: 34px; height: 4px; border-radius: 50px; background: #E52321; }
+      .mobile-app-nav a:active { background: #FEF2F2; transform: scale(0.96); }
+      .slider-container { height: auto; min-height: 0; aspect-ratio: 16 / 9; border-radius: 12px; }
+      .slider-container .slide img { width: 100%; height: auto; min-height: 100%; object-fit: cover; }
       .categories-modal.active, .reels-modal.active { align-items: flex-end; }
       .categories-modal .modal-content, .reels-modal .reels-modal-content { height: 88vh; max-height: 88vh; border-radius: 20px 20px 0 0; animation: slideUp 0.3s ease; }
       .categories-modal .modal-header { border-radius: 20px 20px 0 0; }
