@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mobiles | Patidar Electronics</title>
+  <!-- Google Fonts & Font Awesome Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <style>
+    :root {
+      --primary-red: #ef3340;
+      --dark-red: #c51f2d;
+      --bg-light: #F8F9FA;
+      --card-white: #FFFFFF;
+      --text-dark: #111827;
+      --text-muted: #6B7280;
+      --border-color: #E5E7EB;
+      --success-green: #25d366;
+      --surface-soft: #F3F4F6;
+      --accent-gold: #111827;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg-light); color: var(--text-dark); width: 100%; overflow-x: hidden; padding-bottom: 70px; }
+
+    /* --- Top Sticky Header --- */
+    .header {
+      background: #FFFFFF;
+      border-bottom: 1px solid var(--border-color);
+      padding: 12px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 999;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .header-back {
+      background: none;
+      border: none;
+      font-size: 1.3rem;
+      color: var(--text-dark);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+    }
+
+    .header-back:hover { color: var(--primary-red); }
+
+    .header-title {
+      flex: 1;
+      text-align: center;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-dark);
+    }
+
+    .compare-btn {
+      background: var(--primary-red);
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .compare-btn:hover { background: var(--dark-red); }
+    .compare-btn:disabled { background: #CCC; cursor: not-allowed; }
+
+    /* --- Search Bar --- */
+    .search-wrapper {
+      position: relative;
+      margin-bottom: 12px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 10px 16px;
+      border: 1px solid #D1D5DB;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      background: #F3F4F6;
+      color: var(--text-dark);
+      transition: all 0.2s;
+    }
+
+    .search-input:focus {
+      outline: none;
+      background: var(--card-white);
+      border-color: var(--primary-red);
+      box-shadow: 0 0 8px rgba(229, 35, 33, 0.2);
+    }
+
+    /* --- Filter Chips --- */
+    .filters-wrapper {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .filters-wrapper::-webkit-scrollbar {
+      height: 4px;
+    }
+
+    .filters-wrapper::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 2px;
+    }
+
+    .filter-chip {
+      white-space: nowrap;
+      padding: 8px 16px;
+      border: 1px solid #D1D5DB;
+      background: #F3F4F6;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-dark);
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .filter-chip:hover {
+      border-color: var(--primary-red);
+      color: var(--primary-red);
+    }
+
+    .filter-chip.active {
+      background: var(--primary-red);
+      color: white;
+      border-color: var(--primary-red);
+    }
+
+    /* --- Main Content Area --- */
+    .main-container {
+      display: flex;
+      gap: 16px;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px 16px;
+    }
+
+    /* --- Sidebar (Desktop Only) --- */
+    .sidebar {
+      display: none;
+      width: 220px;
+      flex-shrink: 0;
+    }
+
+    @media (min-width: 900px) {
+      .sidebar { display: block; }
+    }
+
+    .sidebar-section {
+      background: var(--card-white);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+      border: 1px solid #D1D5DB;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .sidebar-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+      margin-bottom: 12px;
+      color: var(--text-dark);
+    }
+
+    .price-input-group {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .price-input {
+      flex: 1;
+      padding: 6px 8px;
+      border: 1px solid #D1D5DB;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      background: #FFFFFF;
+      color: var(--text-dark);
+    }
+
+    .sort-select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 0.9rem;
+      background: var(--card-white);
+      cursor: pointer;
+    }
+
+    /* --- Product Grid --- */
+    .products-container {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .sort-mobile {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      align-items: center;
+    }
+
+    .sort-select-mobile {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 0.85rem;
+      background: #FFFFFF;
+      color: var(--text-dark);
+      cursor: pointer;
+    }
+
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    @media (min-width: 600px) {
+      .products-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+    }
+
+    @media (min-width: 900px) {
+      .products-grid { grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    }
+
+    @media (min-width: 1200px) {
+      .products-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+
+    /* --- Product Card --- */
+    .product-card {
+      background: var(--card-white);
+      border: 1px solid #EAECF0;
+      border-radius: 10px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .product-card:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      transform: translateY(-2px);
+    }
+
+    .product-image-wrapper {
+      position: relative;
+      background: #F9FAFB;
+      height: 220px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .product-image {
+      max-width: 100%;
+      max-height: 200px;
+      object-fit: contain;
+      width: 100%;
+      height: 200px;
+    }
+
+    .compare-checkbox {
+      position: absolute;
+      top: 8px;
+      right: 10px;
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      accent-color: var(--primary-red);
+      z-index: 2;
+    }
+
+    .product-details {
+      padding: 12px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--card-white);
+    }
+
+    .product-name {
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--text-dark);
+      margin-bottom: 6px;
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .product-spec {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      background: #F3F4F6;
+      padding: 3px 6px;
+      border-radius: 3px;
+      display: inline-block;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .product-price {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #111827;
+      margin-bottom: 10px;
+    }
+
+    .product-top {
+      position: absolute;
+      inset: 8px 10px auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 1;
+    }
+
+    .compare-label {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+
+    .wishlist-btn {
+      width: 30px;
+      height: 30px;
+      border: 1px solid var(--border-color);
+      border-radius: 50%;
+      background: #FFFFFF;
+      color: #4B5563;
+      cursor: pointer;
+    }
+
+    .wishlist-btn.active,
+    .wishlist-btn:hover { color: var(--primary-red); border-color: var(--primary-red); }
+
+    .price-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .mrp { color: #9CA3AF; font-size: 0.75rem; }
+    .save-tag { color: #16A34A; font-size: 0.7rem; font-weight: 700; }
+
+    .btn-whatsapp {
+      background: var(--success-green);
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: all 0.2s;
+      text-decoration: none;
+      text-align: center;
+      width: 100%;
+    }
+
+    .btn-whatsapp:hover {
+      background: #128C7E;
+      transform: scale(1.02);
+    }
+
+    /* --- No Results --- */
+    .no-results {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-muted);
+    }
+
+    .no-results i {
+      font-size: 3rem;
+      margin-bottom: 16px;
+      color: var(--border-color);
+    }
+
+    /* --- Bottom Mobile Navigation --- */
+    .bottom-nav {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #FFFFFF;
+      border-top: 1px solid var(--border-color);
+      justify-content: space-around;
+      padding: 8px 0;
+      z-index: 998;
+    }
+
+    @media (max-width: 767px) {
+      body { padding-bottom: 82px; }
+      .header { min-height: 64px; padding: 8px 12px; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); }
+      .header-top { min-height: 48px; margin-bottom: 8px; }
+      .header-back, .compare-btn { min-height: 48px; border-radius: 12px; }
+      .header-back { padding: 8px 10px; }
+      .compare-btn { padding: 8px 12px; }
+      .search-input { min-height: 48px; border-radius: 12px; }
+      .filters-wrapper { scrollbar-width: none; padding-bottom: 4px; scroll-snap-type: x mandatory; }
+      .filters-wrapper::-webkit-scrollbar { display: none; }
+      .filter-chip { min-height: 48px; border-radius: 12px; scroll-snap-align: start; }
+      .main-container { padding: 16px 12px; }
+      .products-grid { display: flex; gap: 12px; overflow-x: auto; padding: 4px 2px 14px; scroll-snap-type: x mandatory; scrollbar-width: none; }
+      .products-grid::-webkit-scrollbar { display: none; }
+      .product-card { flex: 0 0 82%; scroll-snap-align: start; }
+      .sort-select-mobile, .sort-mobile { min-height: 48px; }
+      .sort-select-mobile { border-radius: 12px; }
+      .bottom-nav { display: flex; padding-bottom: calc(8px + env(safe-area-inset-bottom)); }
+      .nav-item { min-height: 54px; border-radius: 12px; position: relative; }
+      .nav-item.active::before { content: ''; position: absolute; top: 2px; width: 34px; height: 4px; border-radius: 50px; background: var(--primary-red); }
+      button, a { min-height: 48px; }
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 8px;
+      flex: 1;
+      text-align: center;
+      transition: color 0.2s;
+    }
+
+    .nav-item:hover,
+    .nav-item.active {
+      color: var(--primary-red);
+    }
+
+    .nav-item i {
+      font-size: 1.3rem;
+    }
+
+    /* --- Responsive Adjustments --- */
+    @media (max-width: 500px) {
+      body { padding-bottom: 65px; }
+      
+      .header {
+        padding: 10px 12px;
+      }
+
+      .header-title {
+        font-size: 1rem;
+      }
+
+      .compare-btn {
+        padding: 4px 8px;
+        font-size: 0.7rem;
+      }
+
+      .sort-mobile {
+        flex-direction: row;
+        gap: 6px;
+      }
+
+      .products-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+      }
+
+      .product-image-wrapper {
+        height: 140px;
+      }
+
+      .product-details {
+        padding: 10px;
+      }
+
+      .product-name {
+        font-size: 0.8rem;
+      }
+
+      .product-price {
+        font-size: 0.95rem;
+      }
+
+      .btn-whatsapp {
+        font-size: 0.75rem;
+        padding: 6px 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header -->
+  <div class="header">
+    <div class="header-top">
+      <button class="header-back" onclick="goBack()">
+        <i class="fa-solid fa-chevron-left"></i> Back
+      </button>
+      <div class="header-title">Mobiles & Tablets</div>
+      <button class="compare-btn" id="compareBtn" onclick="toggleCompare()" disabled>
+        <i class="fa-solid fa-code-compare"></i> Compare
+      </button>
+    </div>
+
+    <div class="search-wrapper">
+      <input type="text" class="search-input" id="searchInput" placeholder="Search mobiles by model..." oninput="handleSearch()">
+    </div>
+
+    <div class="filters-wrapper">
+      <button class="filter-chip active" data-filter="all" onclick="filterByPrice(null, this)">All Mobiles</button>
+      <button class="filter-chip" data-filter="under15k" onclick="filterByPrice([0, 15000], this)">Under ₹15k</button>
+      <button class="filter-chip" data-filter="15k-30k" onclick="filterByPrice([15000, 30000], this)">₹15k - ₹30k</button>
+      <button class="filter-chip" data-filter="30k-50k" onclick="filterByPrice([30000, 50000], this)">₹30k - ₹50k</button>
+      <button class="filter-chip" data-filter="50k-100k" onclick="filterByPrice([50000, 100000], this)">₹50k - ₹1L</button>
+      <button class="filter-chip" data-filter="above100k" onclick="filterByPrice([100000, 10000000], this)">Above ₹1L</button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-container">
+    <!-- Sidebar (Desktop) -->
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-title">Sort By</div>
+        <select class="sort-select" id="sidebarSort" onchange="handleSort()">
+          <option value="popularity">Popularity</option>
+          <option value="low-to-high">Price: Low to High</option>
+          <option value="high-to-low">Price: High to Low</option>
+        </select>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-title">Price Range</div>
+        <div class="price-input-group">
+          <input type="number" class="price-input" id="minPrice" placeholder="Min" value="0">
+          <input type="number" class="price-input" id="maxPrice" placeholder="Max" value="160000">
+        </div>
+        <button class="btn-whatsapp" onclick="applyPriceFilter()" style="gap: 0; margin-top: 8px;">
+          Apply
+        </button>
+      </div>
+    </aside>
+
+    <!-- Products Container -->
+    <div class="products-container">
+      <div class="sort-mobile">
+        <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">Sort:</span>
+        <select class="sort-select-mobile" id="mobileSort" onchange="handleSort()">
+          <option value="popularity">Popularity</option>
+          <option value="low-to-high">Price: Low to High</option>
+          <option value="high-to-low">Price: High to Low</option>
+        </select>
+      </div>
+
+      <div class="products-grid" id="productsGrid">
+        <!-- Products will be dynamically inserted here -->
+      </div>
+
+      <div class="no-results" id="noResults" style="display: none;">
+        <i class="fa-solid fa-search"></i>
+        <p>No mobiles found. Try adjusting your filters.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Mobile Navigation -->
+  <nav class="bottom-nav" aria-label="Mobile app navigation">
+    <a href="index.html" class="nav-item">
+      <i class="fa-solid fa-home"></i>
+      <span>Home</span>
+    </a>
+    <a href="#" class="nav-item active">
+      <i class="fa-solid fa-mobile-screen-button"></i>
+      <span>Mobiles</span>
+    </a>
+    <a href="index.html#festival-offer" class="nav-item">
+      <i class="fa-solid fa-gift"></i>
+      <span>Offers</span>
+    </a>
+    <a href="index.html#insta-gallery" class="nav-item">
+      <i class="fa-brands fa-instagram"></i>
+      <span>Reels</span>
+    </a>
+    <a href="https://wa.me/919009909002" class="nav-item" target="_blank" rel="noopener noreferrer">
+      <i class="fa-brands fa-whatsapp"></i>
+      <span>WhatsApp</span>
+    </a>
+  </nav>
+
+  <script>
+    // --- Product Data ---
+    const products = [];
+    function addProduct(brand, model, variants, colors) {
+      variants.forEach(([specs, price], index) => products.push({
+        brand, model, specs, price, colors: Array.isArray(colors) ? colors[index] : colors,
+        slug: `${brand}-${model}`.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
+      }));
+    }
+
+    addProduct("Nothing", "Phone (3a) Lite", [["8/128GB", 27999], ["8/256GB", 29999]], "Black/White/Blue");
+    addProduct("Nothing", "Phone (4a)", [["8/128GB", 44999], ["8/256GB", 49999], ["12/256GB", 50999]], ["Black/White/Blue", "Black/White/Blue/Pink", "Black/White/Blue/Pink"]);
+    addProduct("Nothing", "Phone (4a) Pro", [["8/128GB", 54999], ["8/256GB", 57999], ["12/256GB", 59999]], ["Black/Silver", "Black/Silver", "Black/Silver/Pink"]);
+    addProduct("Nothing", "Phone (4b)", [["8/128GB", 39999], ["8/256GB", 40999]], "Black/White/Blue");
+
+    addProduct("Oppo", "A60 4G", [["4+64GB", 14599], ["4+128GB", 15599], ["6+128GB", 17599]], "");
+    addProduct("Oppo", "A58", [["6+128GB", 13999]], "");
+    addProduct("Oppo", "F25 Pro 5G", [["8+128GB", 23999], ["8+256GB", 25999]], "");
+    addProduct("Oppo", "F27 5G", [["8+128GB", 22999], ["8+256GB", 24999]], "");
+    addProduct("Oppo", "F27 Pro+ 5G", [["8+128GB", 27999], ["8+256GB", 29999]], "");
+    addProduct("Oppo", "Reno 12 5G", [["8+256GB", 32999], ["12+256GB", 35999]], "");
+    addProduct("Oppo", "Reno 12 Pro 5G", [["12+256GB", 36999], ["12+512GB", 40999]], "");
+    addProduct("Oppo", "Reno 12 Pro Mini 5G", [["8+128GB", 30999], ["8+256GB", 32999]], "");
+    addProduct("Oppo", "Reno 13 5G", [["12+256GB", 37999]], "");
+    addProduct("Oppo", "Reno 13 Pro 5G", [["12+256GB", 44999], ["12+512GB", 49999]], "");
+    addProduct("Oppo", "Find X8 5G", [["12+256GB", 64999], ["12+512GB", 69999]], "");
+    addProduct("Oppo", "Find X8 Pro 5G", [["16+512GB", 99999]], "");
+    addProduct("Oppo", "Find X8 Pro Ultra", [["16+1TB", 114999]], "");
+
+    addProduct("Realme", "P4 Lite 5G", [["4+64GB", 17099], ["4+128GB", 18099], ["6+128GB", 22099]], "");
+    addProduct("Realme", "P4 5G", [["4+64GB", 19999], ["4+128GB", 21500], ["6+128GB", 23999], ["6+256GB", 26950]], "");
+    addProduct("Realme", "P4X", [["8+128GB", 27999], ["8+256GB", 32999]], "");
+    addProduct("Realme", "P4 Power", [["8+128GB", 31000], ["8+256GB", 34000]], "");
+    addProduct("Realme", "P4S New", [["4+64GB", 26999], ["4+128GB", 29999], ["6+128GB", 35999], ["12+256GB", 41000]], "");
+    addProduct("Realme", "C1001 New", [["4+64GB", 10999]], "");
+    addProduct("Realme", "C100X", [["4+64GB", 16999]], "");
+    addProduct("Realme", "C83 5G", [["4+64GB", 19450], ["4+128GB", 21499], ["4+128GB", 24455]], "");
+    addProduct("Realme", "13x 5G", [["4+128GB", 25999], ["6+128GB", 27999], ["6+256GB", 30999]], "");
+    addProduct("Realme", "15T 5G", [["6+128GB", 20999], ["8+128GB", 22999]], "");
+    addProduct("Realme", "16 5G", [["8+128GB", 28999], ["8+256GB", 30999], ["12+256GB", 32999]], "");
+    addProduct("Realme", "16 Pro 5G", [["8+128GB", 44999], ["8+256GB", 46000], ["12+256GB", 49999]], "");
+    addProduct("Realme", "16 Pro+ 5G", [["8+128GB", 50999], ["8+256GB", 53000], ["12+512GB", 59999]], "");
+    addProduct("Realme", "GT 8 Pro", [["16+512GB", 70999]], "");
+    addProduct("Realme", "Pad 3 5G LTE", [["6+128GB", 31999], ["8+128GB", 32999]], "");
+
+    const allProducts = products;
+
+    let filteredProducts = [...allProducts];
+    let currentSort = "popularity";
+    let selectedForCompare = new Set();
+    const wishlist = new Set();
+
+    function formatPrice(value) {
+      return `₹${value.toLocaleString("en-IN")}`;
+    }
+
+    function phoneFallback(image, productName) {
+      image.onerror = null;
+      image.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 300'%3E%3Crect x='15' y='5' width='150' height='290' rx='24' fill='%23111416' stroke='%236b737b' stroke-width='5'/%3E%3Crect x='25' y='30' width='130' height='235' rx='12' fill='%23333b42'/%3E%3Ccircle cx='90' cy='278' r='5' fill='%23f3c969'/%3E%3C/svg%3E";
+      image.alt = `${productName} phone mockup`;
+    }
+
+    function toggleWishlist(id, button) {
+      if (wishlist.has(id)) wishlist.delete(id);
+      else wishlist.add(id);
+      button.classList.toggle("active", wishlist.has(id));
+      button.innerHTML = wishlist.has(id) ? "<i class=\"fa-solid fa-heart\"></i>" : "<i class=\"fa-regular fa-heart\"></i>";
+    }
+
+    // --- Render Products ---
+    function renderProducts() {
+      const grid = document.getElementById("productsGrid");
+      const noResults = document.getElementById("noResults");
+
+      if (filteredProducts.length === 0) {
+        grid.innerHTML = "";
+        noResults.style.display = "block";
+        return;
+      }
+
+      noResults.style.display = "none";
+      grid.innerHTML = filteredProducts.map((product, index) => {
+        const productId = `${product.slug}-${product.specs.replace(/[^a-z0-9]/gi, "")}-${product.price}`;
+        const title = `${product.brand} ${product.model}`;
+        const mrp = Math.ceil(product.price * 1.1 / 100) * 100;
+        const specs = product.specs.replace("+", "GB RAM, ").replace("/", "GB, ");
+        return `
+        <div class="product-card">
+          <div class="product-image-wrapper">
+            <div class="product-top">
+              <label class="compare-label"><input type="checkbox" class="compare-checkbox" data-index="${index}" onchange="toggleProductCompare(${index}, this)"> Compare</label>
+              <button class="wishlist-btn" type="button" onclick="toggleWishlist('${productId}', this)" aria-label="Add to wishlist"><i class="fa-regular fa-heart"></i></button>
+            </div>
+            <img src="images/mobiles/${product.slug}.png" onerror="phoneFallback(this, '${title.replace(/'/g, "\\'")}')" alt="${title}" class="product-image">
+          </div>
+          <div class="product-details">
+            <div class="product-name">${title}</div>
+            <span class="product-spec">${specs}${product.colors ? ` | ${product.colors}` : ""}</span>
+            <div class="product-price">${formatPrice(product.price)}</div>
+            <div class="price-meta"><span class="mrp"><s>MRP ${formatPrice(mrp)}</s></span><span class="save-tag">Save ${formatPrice(mrp - product.price)}</span></div>
+            <a href="https://wa.me/919009909002?text=${encodeURIComponent(`I am interested in ${title} ${product.specs}`)}" 
+              target="_blank" class="btn-whatsapp">
+              <i class="fa-brands fa-whatsapp"></i> Enquire on WhatsApp
+            </a>
+          </div>
+        </div>
+      `;
+      }).join("");
+    }
+
+    // --- Handle Search ---
+    function handleSearch() {
+      const query = document.getElementById("searchInput").value.toLowerCase();
+      filteredProducts = allProducts.filter(p => 
+        `${p.brand} ${p.model}`.toLowerCase().includes(query) || 
+        p.specs.toLowerCase().includes(query)
+      );
+      applySort();
+      renderProducts();
+    }
+
+    // --- Filter by Price ---
+    function filterByPrice(range, element) {
+      // Reset all filter chips
+      document.querySelectorAll('.filter-chip').forEach(chip => chip.classList.remove('active'));
+      element.classList.add('active');
+
+      if (!range) {
+        filteredProducts = [...allProducts];
+      } else {
+        filteredProducts = allProducts.filter(p => p.price >= range[0] && p.price <= range[1]);
+      }
+
+      const query = document.getElementById("searchInput").value.toLowerCase();
+      if (query) {
+        filteredProducts = filteredProducts.filter(p => 
+          `${p.brand} ${p.model}`.toLowerCase().includes(query) || 
+          p.specs.toLowerCase().includes(query)
+        );
+      }
+
+      applySort();
+      renderProducts();
+    }
+
+    // --- Handle Sort ---
+    function handleSort() {
+      const sortMobile = document.getElementById("mobileSort").value;
+      const sortDesktop = document.getElementById("sidebarSort").value;
+      currentSort = sortMobile || sortDesktop;
+      applySort();
+      renderProducts();
+    }
+
+    // --- Apply Sort ---
+    function applySort() {
+      const sorted = [...filteredProducts];
+      if (currentSort === "low-to-high") {
+        sorted.sort((a, b) => a.price - b.price);
+      } else if (currentSort === "high-to-low") {
+        sorted.sort((a, b) => b.price - a.price);
+      }
+      filteredProducts = sorted;
+    }
+
+    // --- Apply Custom Price Filter ---
+    function applyPriceFilter() {
+      const min = parseInt(document.getElementById("minPrice").value) || 0;
+      const max = parseInt(document.getElementById("maxPrice").value) || 160000;
+      filterByPrice([min, max], document.querySelector('[data-filter="all"]'));
+    }
+
+    // --- Compare Functionality ---
+    function toggleProductCompare(index, checkbox) {
+      if (checkbox.checked) {
+        selectedForCompare.add(index);
+      } else {
+        selectedForCompare.delete(index);
+      }
+      updateCompareBtn();
+    }
+
+    function updateCompareBtn() {
+      const compareBtn = document.getElementById("compareBtn");
+      if (selectedForCompare.size > 0) {
+        compareBtn.disabled = false;
+        compareBtn.textContent = `Compare (${selectedForCompare.size})`;
+      } else {
+        compareBtn.disabled = true;
+        compareBtn.textContent = 'Compare';
+      }
+    }
+
+    function toggleCompare() {
+      if (selectedForCompare.size === 0) return;
+      // In a real app, this would navigate to a comparison page
+      alert(`Compare selected products:\n${Array.from(selectedForCompare).map(i => 
+        `${filteredProducts[i].brand} ${filteredProducts[i].model} (${filteredProducts[i].specs})`
+      ).join('\n')}`);
+    }
+
+    // --- Go Back ---
+    function goBack() {
+      window.history.back();
+    }
+
+    // --- Initialize ---
+    renderProducts();
+  </script>
+</body>
+</html>
