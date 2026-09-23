@@ -130,6 +130,26 @@
     .section-header h2 { font-size: 1.8rem; font-weight: 800; color: var(--text-dark); }
     .section-header p { color: var(--text-muted); font-size: 0.95rem; }
 
+    .ad-slot-wrapper {
+      background: #FAFAFA;
+      border: 1px solid #E5E7EB;
+      border-radius: 12px;
+      padding: 12px;
+      margin: 24px auto;
+      text-align: center;
+      max-width: 100%;
+      overflow: hidden;
+    }
+    .ad-label { display: block; font-size: 10px; color: #9CA3AF; letter-spacing: 0.5px; margin-bottom: 8px; text-transform: uppercase; }
+    @media (min-width: 769px) {
+      .desktop-ad-container { display: block !important; }
+      .mobile-ad-container { display: none !important; }
+    }
+    @media (max-width: 768px) {
+      .desktop-ad-container { display: none !important; }
+      .mobile-ad-container { display: block !important; }
+    }
+
     /* --- Happy Customers Grid (8 Images) --- */
     .customers-grid {
       display: grid;
@@ -813,7 +833,7 @@
       .customer-card { min-width: 0; }
       .claim-offer-section { scroll-margin-top: 80px; }
       .insta-section-bar { scroll-margin-top: 80px; }
-      .mobile-app-nav { position: fixed; display: flex; bottom: 0; left: 0; right: 0; width: 100%; height: 60px; z-index: 9999; background: #FFFFFF; border-top: 1px solid #E5E7EB; padding: 0; box-shadow: 0 -4px 15px rgba(0,0,0,0.05); align-items: center; justify-content: space-around; }
+      .mobile-app-nav { position: fixed; display: flex; bottom: 0; left: 0; right: 0; width: 100%; height: 60px; z-index: 9999; background: #FFFFFF; border-top: 1px solid #E5E7EB; padding: 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.08); align-items: center; justify-content: space-around; }
       .mobile-app-nav a { position: relative; display: flex; flex: 1; min-height: 48px; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #6B7280; text-decoration: none; font-size: 0.65rem; font-weight: 700; border-radius: 12px; transition: color 0.2s ease, background 0.2s ease; }
       .mobile-app-nav a i { font-size: 1.05rem; }
       .mobile-app-nav a.active { color: #E52321; }
@@ -872,7 +892,7 @@
       <h2>Shop by Category</h2>
       <p>Explore our wide range of products across different categories</p>
     </div>
-    <div class="category-grid">
+    <div class="category-grid" id="category-section">
       <!-- 1. Mobiles -->
       <a href="mobiles.html" class="category-card">
         <div class="category-image-wrapper">
@@ -951,6 +971,18 @@
           <div style="font-size: 2.5rem; color: var(--primary-red);"><i class="fa-solid fa-ellipsis"></i></div>
         </div>
         <div class="category-title">View All<br>Categories</div>
+      </div>
+    </div>
+
+    <div class="ad-slot-wrapper">
+      <span class="ad-label">SPONSORED</span>
+      <div class="desktop-ad-container">
+        <script async="async" data-cfasync="false" src="https://pl31472970.profitableratecpmnetwork.com/0c240b9efc6626fa89ca57460f8aa979/invoke.js"></script>
+        <div id="container-0c240b9efc6626fa89ca57460f8aa979"></div>
+      </div>
+      <div class="mobile-ad-container">
+        <script async="async" data-cfasync="false" src="https://pl31472970.profitableratecpmnetwork.com/0c240b9efc6626fa89ca57460f8aa979/invoke.js"></script>
+        <div id="container-0c240b9efc6626fa89ca57460f8aa979"></div>
       </div>
     </div>
 
@@ -1158,6 +1190,18 @@
       <div class="customer-card"><div class="customer-photo"><img src="images/image8.jpeg" alt="Happy customer at Patidar Mobile"><span class="photo-badge left"><i class="fa-solid fa-circle-check"></i> Verified Buyer</span><span class="photo-badge right"><i class="fa-solid fa-bag-shopping"></i> Verified Purchase</span></div><div class="customer-details"><div class="customer-rating" aria-label="5 out of 5 stars">★★★★★</div><div class="customer-caption">Smiles after an instant handover | Sagore</div><div class="customer-verified"><i class="fa-solid fa-shield-check"></i> 100% Genuine Handover</div></div></div>
     </div>
 
+    <div class="ad-slot-wrapper">
+      <span class="ad-label">SPONSORED</span>
+      <div class="desktop-ad-container">
+        <script async="async" data-cfasync="false" src="https://pl31472970.profitableratecpmnetwork.com/0c240b9efc6626fa89ca57460f8aa979/invoke.js"></script>
+        <div id="container-0c240b9efc6626fa89ca57460f8aa979"></div>
+      </div>
+      <div class="mobile-ad-container">
+        <script async="async" data-cfasync="false" src="https://pl31472970.profitableratecpmnetwork.com/0c240b9efc6626fa89ca57460f8aa979/invoke.js"></script>
+        <div id="container-0c240b9efc6626fa89ca57460f8aa979"></div>
+      </div>
+    </div>
+
     <!-- Claim Offer CTA Button Section -->
     <div class="claim-offer-section" id="festival-offer">
       <div class="offer-layout">
@@ -1172,7 +1216,7 @@
           </ul>
           <div class="offer-actions">
             <div class="offer-countdown"><i class="fa-regular fa-clock"></i> Offer Ends In: <span id="offerCountdown">02 Days : 14 Hours : 30 Mins</span></div>
-            <a href="https://wa.me/919009909002?text=Hello%20Patidar%20Mobile%21%20I%20want%20to%20claim%20the%20special%20offer%20posted%20on%20your%20website." class="btn-claim" target="_blank">
+            <a href="https://wa.me/919926702666?text=Hello%20Patidar%20Mobile%20%26%20Electronics!%20I%20am%20visiting%20your%20website%20and%20would%20like%20to%20explore%20your%20latest%20offers%20and%20products." class="btn-claim" target="_blank">
               💬 Claim Free Bicycle on WhatsApp
             </a>
           </div>
@@ -1262,10 +1306,10 @@
 
   <nav class="mobile-app-nav" aria-label="Mobile app navigation">
     <a href="index.html" class="active"><i class="fa-solid fa-house"></i><span>Home</span></a>
-    <a href="mobiles.html"><i class="fa-solid fa-mobile-screen-button"></i><span>Mobiles</span></a>
+    <a href="#category-section" onclick="openCategoriesModal(); return false;"><i class="fa-solid fa-layer-group"></i><span>Categories</span></a>
     <a href="#festival-offer"><i class="fa-solid fa-gift"></i><span>Offers</span></a>
     <a href="#insta-gallery"><i class="fa-brands fa-instagram"></i><span>Reels</span></a>
-    <a href="https://wa.me/919009909002" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp"></i><span>WhatsApp</span></a>
+    <a href="https://wa.me/919926702666?text=Hello%20Patidar%20Mobile%20%26%20Electronics!%20I%20am%20visiting%20your%20website%20and%20would%20like%20to%20explore%20your%20latest%20offers%20and%20products." target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp"></i><span>WhatsApp</span></a>
   </nav>
 
   <script>
