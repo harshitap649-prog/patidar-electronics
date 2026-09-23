@@ -451,9 +451,11 @@
       padding: 8px 0;
       z-index: 998;
     }
+    .bottom-nav-item.active { color: #E52321 !important; font-weight: bold; }
+    .bottom-nav-item.active svg, .bottom-nav-item.active i { fill: #E52321 !important; stroke: #E52321 !important; }
 
     @media (max-width: 767px) {
-      body { padding-bottom: 70px; }
+      body { padding-bottom: 70px !important; }
       .header { min-height: 60px; padding: 10px 16px; background: rgba(255,255,255,0.95); border-bottom: 1px solid #F0F0F0; backdrop-filter: blur(10px); z-index: 1000; }
       .header-top { min-height: 48px; margin-bottom: 8px; }
       .header-back, .compare-btn { min-height: 48px; border-radius: 12px; }
@@ -468,10 +470,10 @@
       .product-card { min-width: 0; }
       .sort-select-mobile, .sort-mobile { min-height: 48px; }
       .sort-select-mobile { border-radius: 12px; }
-      .bottom-nav { display: flex; height: 60px; padding: 0; z-index: 9999; align-items: center; }
-      .nav-item { min-height: 48px; border-radius: 12px; position: relative; transition: color 0.2s ease, background 0.2s ease; }
-      .nav-item.active::before { content: ''; position: absolute; top: 2px; width: 34px; height: 4px; border-radius: 50px; background: var(--primary-red); }
-      .nav-item:active { background: #FEF2F2; transform: scale(0.96); }
+      .bottom-nav { position: fixed !important; bottom: 0 !important; top: auto !important; left: 0 !important; right: 0 !important; width: 100% !important; height: 60px !important; background: #ffffff !important; border-top: 1px solid #e5e7eb !important; display: flex !important; justify-content: space-around !important; align-items: center !important; z-index: 99999 !important; box-shadow: 0 -2px 10px rgba(0,0,0,0.08) !important; padding: 0 !important; }
+      .bottom-nav .bottom-nav-item { min-height: 48px; border-radius: 12px; position: relative; transition: color 0.2s ease, background 0.2s ease; }
+      .bottom-nav .bottom-nav-item.active::before { content: ''; position: absolute; top: 2px; width: 34px; height: 4px; border-radius: 50px; background: #E52321; }
+      .bottom-nav .bottom-nav-item:active { background: #FEF2F2; transform: scale(0.96); }
       button, a { min-height: 48px; }
     }
 
@@ -650,29 +652,45 @@
 
   <!-- Bottom Mobile Navigation -->
   <nav class="bottom-nav" aria-label="Mobile app navigation">
-    <a href="index.html" class="nav-item">
+    <a href="index.html" class="bottom-nav-item" data-nav="home">
       <i class="fa-solid fa-home"></i>
       <span>Home</span>
     </a>
-    <a href="index.html#category-section" class="nav-item">
+    <a href="index.html#category-section" class="bottom-nav-item" data-nav="categories">
       <i class="fa-solid fa-layer-group"></i>
       <span>Categories</span>
     </a>
-    <a href="index.html#festival-offer" class="nav-item">
+    <a href="index.html#festival-offer" class="bottom-nav-item" data-nav="offers">
       <i class="fa-solid fa-gift"></i>
       <span>Offers</span>
     </a>
-    <a href="index.html#insta-gallery" class="nav-item">
+    <a href="index.html#insta-gallery" class="bottom-nav-item" data-nav="reels">
       <i class="fa-brands fa-instagram"></i>
       <span>Reels</span>
     </a>
-    <a href="https://wa.me/919926702666?text=Hello%20Patidar%20Mobile%20%26%20Electronics!%20I%20am%20visiting%20your%20website%20and%20would%20like%20to%20explore%20your%20latest%20offers%20and%20products." class="nav-item" target="_blank" rel="noopener noreferrer">
+    <a href="https://wa.me/919926702666?text=Hello%20Patidar%20Mobile%20%26%20Electronics!%20I%20am%20visiting%20your%20website%20and%20would%20like%20to%20explore%20your%20latest%20offers%20and%20products." class="bottom-nav-item" data-nav="whatsapp" target="_blank" rel="noopener noreferrer">
       <i class="fa-brands fa-whatsapp"></i>
       <span>WhatsApp</span>
     </a>
   </nav>
 
   <script>
+    function initializeBottomNavigation() {
+      const navigationItems = document.querySelectorAll('.bottom-nav-item');
+      const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+      const activePage = currentPage === 'index.html' ? 'home' : currentPage === 'mobiles.html' ? 'categories' : '';
+
+      navigationItems.forEach(item => {
+        item.classList.toggle('active', item.dataset.nav === activePage);
+        item.addEventListener('click', () => {
+          navigationItems.forEach(navigationItem => navigationItem.classList.remove('active'));
+          item.classList.add('active');
+        });
+      });
+    }
+
+    initializeBottomNavigation();
+
     // --- Product Data ---
     const products = [];
     function addProduct(brand, model, variants, colors) {
