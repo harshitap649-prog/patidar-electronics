@@ -4,9 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Mobiles | Patidar Electronics</title>
-  <!-- Google Fonts & Font Awesome Icons -->
+  <!-- Performance: preconnect third-party origins used below -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
+  <!-- Google Fonts & Font Awesome Icons (stylesheets stay in <head> to avoid CLS) -->
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Shared perf helpers (debounce, rAF render, sessionStorage cache, prefetch).
+       Not deferred: inline body scripts read window.PatidarPerf while parsing,
+       and defer would run AFTER them, leaving every Perf hook dead. -->
+  <script src="js/perf.js"></script>
 
   <style>
     :root {
@@ -255,6 +263,8 @@
 
     /* --- Product Card --- */
     .product-card {
+      content-visibility: auto;
+      contain-intrinsic-size: auto 520px;
       background: var(--card-white);
       border: 1px solid #EAECF0;
       border-radius: 10px;
@@ -284,8 +294,16 @@
       max-width: 100%;
       max-height: 200px;
       object-fit: contain;
+      object-position: center;
       width: 100%;
       height: 200px;
+      padding: 6px 10px;
+      transition: opacity 0.25s ease;
+    }
+
+    /* Deterministic branded card / transparent outline shown instead of a missing photo */
+    .product-image.is-placeholder {
+      opacity: 0.85;
     }
 
     .compare-checkbox {
@@ -379,6 +397,40 @@
 
     .mrp { color: #9CA3AF; font-size: 0.75rem; }
     .save-tag { color: #16A34A; font-size: 0.7rem; font-weight: 700; }
+
+    /* In-stock pill badge on product cards */
+    .stock-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      align-self: flex-start;
+      background: #ECFDF5;
+      border: 1px solid #A7F3D0;
+      color: #16A34A;
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      padding: 3px 8px;
+      border-radius: 50px;
+      margin-bottom: 8px;
+    }
+
+    /* EMI per-month label on product cards */
+    .emi-label {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: #FFF7ED;
+      border: 1px dashed #FDBA74;
+      color: #C2410C;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+    }
+
+    .emi-label i { font-size: 0.72rem; }
 
     .btn-whatsapp {
       background: var(--success-green);
@@ -525,7 +577,7 @@
     </div>
 
     <div class="search-wrapper">
-      <input type="text" class="search-input" id="searchInput" placeholder="Search mobiles by model..." oninput="handleSearch()">
+      <input type="text" class="search-input" id="searchInput" placeholder="Search mobiles by model..." autocomplete="off">
     </div>
 
     <div class="filters-wrapper">
@@ -588,30 +640,53 @@
   <script>
     // --- Product Data ---
     const products = [];
-    function addProduct(brand, model, variants, colors) {
+    function addProduct(brand, model, variants, colors, image = "") {
       variants.forEach(([specs, price], index) => products.push({
         brand, model, specs, price, colors: Array.isArray(colors) ? colors[index] : colors,
+        image: image,
         slug: `${brand}-${model}`.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
       }));
     }
+    // -----------------------------------------------------------------------
+    // CUSTOM PRODUCT IMAGES - optional 5th argument: image
+    // -----------------------------------------------------------------------
+    // Each card resolves its picture in this order:
+    //   1. the "image" value passed to addProduct()  -> local path OR remote URL
+    //   2. images/mobiles/<slug>.png                 -> <slug> = brand-model, lowercase,
+    //                                                   non-alphanumerics collapsed to "-"
+    //                                                   (e.g. "Oppo Reno 12 Pro 5G" -> oppo-reno-12-pro-5g.png)
+    //   3. an auto-generated branded card            -> offline safe, never a broken frame
+    //   4. a transparent phone outline               -> last resort (phoneFallback)
+    //
+    // A real photo can still be supplied through the addProduct(brand, model,
+    // variants, colors, image) "image" argument.
+    // -----------------------------------------------------------------------
 
-    addProduct("Nothing", "Phone (3a) Lite", [["8/128GB", 27999], ["8/256GB", 29999]], "Black/White/Blue");
-    addProduct("Nothing", "Phone (4a)", [["8/128GB", 44999], ["8/256GB", 49999], ["12/256GB", 50999]], ["Black/White/Blue", "Black/White/Blue/Pink", "Black/White/Blue/Pink"]);
-    addProduct("Nothing", "Phone (4a) Pro", [["8/128GB", 54999], ["8/256GB", 57999], ["12/256GB", 59999]], ["Black/Silver", "Black/Silver", "Black/Silver/Pink"]);
-    addProduct("Nothing", "Phone (4b)", [["8/128GB", 39999], ["8/256GB", 40999]], "Black/White/Blue");
+    // NOTE ON DATA PROVENANCE:
+    // The list below is the mobile handset inventory. Appliance stock (Smart TVs,
+    // Refrigerators, Washing Machines) is sourced from showroom tax invoices and
+    // lives in js/catalog-data.js, rendered by category.html - do not duplicate
+    // those products here.
+    // -----------------------------------------------------------------------
 
-    addProduct("Oppo", "A60 4G", [["4+64GB", 14599], ["4+128GB", 15599], ["6+128GB", 17599]], "");
-    addProduct("Oppo", "A58", [["6+128GB", 13999]], "");
+    addProduct("Nothing", "Phone (3a) Lite", [["8/128GB", 27999], ["8/256GB", 29999]], "Black/White/Blue",
+      "images/mobile img.png");
+    addProduct("Nothing", "Phone (4a)", [["8/128GB", 44999], ["8/256GB", 49999], ["12/256GB", 50999]], ["Black/White/Blue", "Black/White/Blue/Pink", "Black/White/Blue/Pink"], "assets/images/products/nothing-phone-4a.jpg");
+    addProduct("Nothing", "Phone (4a) Pro", [["8/128GB", 54999], ["8/256GB", 57999], ["12/256GB", 59999]], ["Black/Silver", "Black/Silver", "Black/Silver/Pink"], "assets/images/products/nothing-phone-4a-pro.jpg");
+    addProduct("Nothing", "Phone (4b)", [["8/128GB", 39999], ["8/256GB", 40999]], "Black/White/Blue", "assets/images/products/nothing-phone-4b.jpg");
+
+    addProduct("Oppo", "A60 4G", [["4+64GB", 14599], ["4+128GB", 15599], ["6+128GB", 17599]], "", "assets/images/products/oppo-a60-4g.jpg");
+    addProduct("Oppo", "A58", [["6+128GB", 13999]], "", "assets/images/products/oppo-a58.jpg");
     addProduct("Oppo", "F25 Pro 5G", [["8+128GB", 23999], ["8+256GB", 25999]], "");
     addProduct("Oppo", "F27 5G", [["8+128GB", 22999], ["8+256GB", 24999]], "");
     addProduct("Oppo", "F27 Pro+ 5G", [["8+128GB", 27999], ["8+256GB", 29999]], "");
-    addProduct("Oppo", "Reno 12 5G", [["8+256GB", 32999], ["12+256GB", 35999]], "");
-    addProduct("Oppo", "Reno 12 Pro 5G", [["12+256GB", 36999], ["12+512GB", 40999]], "");
+    addProduct("Oppo", "Reno 12 5G", [["8+256GB", 32999], ["12+256GB", 35999]], "", "assets/images/products/oppo-reno-12-5g.jpg");
+    addProduct("Oppo", "Reno 12 Pro 5G", [["12+256GB", 36999], ["12+512GB", 40999]], "", "assets/images/products/oppo-reno-12-pro-5g.jpg");
     addProduct("Oppo", "Reno 12 Pro Mini 5G", [["8+128GB", 30999], ["8+256GB", 32999]], "");
-    addProduct("Oppo", "Reno 13 5G", [["12+256GB", 37999]], "");
-    addProduct("Oppo", "Reno 13 Pro 5G", [["12+256GB", 44999], ["12+512GB", 49999]], "");
-    addProduct("Oppo", "Find X8 5G", [["12+256GB", 64999], ["12+512GB", 69999]], "");
-    addProduct("Oppo", "Find X8 Pro 5G", [["16+512GB", 99999]], "");
+    addProduct("Oppo", "Reno 13 5G", [["12+256GB", 37999]], "", "assets/images/products/oppo-reno-13-5g.jpg");
+    addProduct("Oppo", "Reno 13 Pro 5G", [["12+256GB", 44999], ["12+512GB", 49999]], "", "assets/images/products/oppo-reno-13-pro-5g.jpg");
+    addProduct("Oppo", "Find X8 5G", [["12+256GB", 64999], ["12+512GB", 69999]], "", "assets/images/products/oppo-find-x8-5g.jpg");
+    addProduct("Oppo", "Find X8 Pro 5G", [["16+512GB", 99999]], "", "assets/images/products/oppo-find-x8-pro-5g.jpg");
     addProduct("Oppo", "Find X8 Pro Ultra", [["16+1TB", 114999]], "");
 
     addProduct("Realme", "P4 Lite 5G", [["4+64GB", 17099], ["4+128GB", 18099], ["6+128GB", 22099]], "");
@@ -641,11 +716,124 @@
       return `₹${value.toLocaleString("en-IN")}`;
     }
 
-    function phoneFallback(image, productName) {
-      image.onerror = null;
-      image.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 300'%3E%3Crect x='15' y='5' width='150' height='290' rx='24' fill='%23111416' stroke='%236b737b' stroke-width='5'/%3E%3Crect x='25' y='30' width='130' height='235' rx='12' fill='%23333b42'/%3E%3Ccircle cx='90' cy='278' r='5' fill='%23f3c969'/%3E%3C/svg%3E";
-      image.alt = `${productName} phone mockup`;
+    // --- Product imagery -----------------------------------------------------
+    // Cards are generated locally as deterministic inline SVG: no network calls,
+    // no 404s and no dark frames. A real photo can still be supplied through the
+    // addProduct(brand, model, variants, colors, image) "image" argument.
+    function escXml(value) {
+      return String(value).replace(/[&<>"']/g, (ch) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;",
+      })[ch]);
     }
+
+    function brandHue(brand) {
+      let hash = 0;
+      const name = String(brand);
+      for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) % 100000;
+      return hash % 360;
+    }
+
+    function wrapWords(text, maxChars) {
+      const words = String(text).replace(/["']/g, "").trim().split(/\s+/);
+      const lines = [];
+      let line = "";
+      words.forEach((word) => {
+        if (!line) line = word;
+        else if ((line + " " + word).length <= maxChars) line += " " + word;
+        else {
+          lines.push(line);
+          line = word;
+        }
+      });
+      if (line) lines.push(line);
+      return lines.slice(0, 3);
+    }
+
+    function buildProductCard(product) {
+      const hue = brandHue(product.brand);
+      const tint = `hsl(${hue}, 68%, 96%)`;
+      const accent = `hsl(${hue}, 55%, 42%)`;
+      const stroke = `hsl(${hue}, 38%, 74%)`;
+      const text = `hsl(${hue}, 30%, 22%)`;
+      const label = `hsl(${hue}, 12%, 46%)`;
+      const lines = wrapWords(`${product.brand} ${product.model}`, 15);
+      const firstLineY = 386 - (lines.length - 1) * 8;
+      const brandY = firstLineY - 30;
+      const labelY = firstLineY + (lines.length - 1) * 27 + 36;
+      const wordmark = lines
+        .map((line, i) => `<text x='200' y='${firstLineY + i * 27}' text-anchor='middle' font-size='21' font-weight='700' fill='${text}'>${escXml(line)}</text>`)
+        .join("");
+      const spec = product.specs ? escXml(product.specs) : "";
+      const specBadge = spec
+        ? `<rect x='144' y='${labelY - 19}' width='112' height='26' rx='13' fill='none' stroke='${stroke}' stroke-width='1.5'/><text x='200' y='${labelY}' text-anchor='middle' font-size='14' font-weight='600' fill='${accent}'>${spec}</text>`
+        : "";
+      const svg =
+        `<svg xmlns='http://www.w3.org/2000/svg' width='400' height='500' viewBox='0 0 400 500' role='img'>` +
+        `<defs><linearGradient id='bg' x1='0' y1='0' x2='0' y2='1'>` +
+        `<stop offset='0' style='stop-color:#ffffff;stop-opacity:1'/>` +
+        `<stop offset='1' style='stop-color:${tint};stop-opacity:1'/>` +
+        `</linearGradient></defs>` +
+        `<rect width='400' height='500' fill='url(#bg)'/>` +
+        `<rect x='136' y='52' width='128' height='250' rx='26' fill='none' stroke='${stroke}' stroke-width='4'/>` +
+        `<rect x='176' y='61' width='48' height='7' rx='3.5' fill='none' stroke='${stroke}' stroke-width='2'/>` +
+        `<rect x='146' y='84' width='108' height='186' rx='12' fill='none' stroke='${stroke}' stroke-width='1.5' stroke-dasharray='5 6'/>` +
+        `<circle cx='200' cy='176' r='30' fill='none' stroke='${stroke}' stroke-width='2.5'/>` +
+        `<circle cx='200' cy='176' r='11' fill='none' stroke='${accent}' stroke-width='2.5'/>` +
+        `<text x='200' y='${brandY}' text-anchor='middle' font-size='13' font-weight='700' letter-spacing='3' fill='${label}'>${escXml(String(product.brand).toUpperCase())}</text>` +
+        wordmark +
+        specBadge +
+        `</svg>`;
+      return "data:image/svg+xml," + encodeURIComponent(svg);
+    }
+
+    // Clean transparent phone outline used when a real photo is missing/broken.
+    const OUTLINE_FALLBACK =
+      "data:image/svg+xml," +
+      encodeURIComponent(
+        `<svg xmlns='http://www.w3.org/2000/svg' width='180' height='300' viewBox='0 0 180 300' role='img'>` +
+        `<rect x='17' y='7' width='146' height='286' rx='26' fill='none' stroke='#CBD5E1' stroke-width='4'/>` +
+        `<rect x='66' y='19' width='48' height='7' rx='3.5' fill='none' stroke='#CBD5E1' stroke-width='2.5'/>` +
+        `<text x='90' y='160' text-anchor='middle' font-size='15' font-weight='600' fill='#94A3B8'>No image</text>` +
+        `</svg>`
+      );
+
+    // Image resolution order per card:
+    //   1. product.image (local path or remote URL passed to addProduct)
+    //   2. images/mobiles/<slug>.png
+    //   3. auto-generated branded card (offline, never a 404 frame)
+    //   4. transparent phone outline
+    function imageFallback(image) {
+      image.onerror = null;
+      if (image.dataset.fallbackStage !== "1") {
+        image.dataset.fallbackStage = "1";
+        image.src = buildProductCard({
+          brand: image.dataset.brand || "",
+          model: image.dataset.model || "",
+          specs: image.dataset.specs || "",
+        });
+        return;
+      }
+      image.dataset.fallbackStage = "2";
+      image.src = OUTLINE_FALLBACK;
+      image.classList.add("is-placeholder");
+      image.alt = `${image.dataset.title || "Product"} — image not available`;
+    }
+
+    // Kept as an alias for the older name so existing markup keeps working.
+    function phoneFallback(image) {
+      imageFallback(image);
+    }
+
+    // image "error" does not bubble, so capture it to keep cards clean without
+    // fragile inline onerror strings (product names contain quotes/brackets).
+    document.addEventListener(
+      "error",
+      (event) => {
+        const el = event.target;
+        if (el && el.tagName === "IMG" && el.classList.contains("product-image")) imageFallback(el);
+      },
+      true
+    );
 
     function toggleWishlist(id, button) {
       if (wishlist.has(id)) wishlist.delete(id);
@@ -666,27 +854,34 @@
       }
 
       noResults.style.display = "none";
+      if (window.__bindProductGrid) window.__bindProductGrid();
       grid.innerHTML = filteredProducts.map((product, index) => {
         const productId = `${product.slug}-${product.specs.replace(/[^a-z0-9]/gi, "")}-${product.price}`;
         const title = `${product.brand} ${product.model}`;
         const mrp = Math.ceil(product.price * 1.1 / 100) * 100;
         const specs = product.specs.replace("+", "GB RAM, ").replace("/", "GB, ");
+        const emiMonthly = Math.round(product.price / 12);
+        const waMessage = encodeURIComponent(
+          `Hi, I'm interested in this model:\n\n*Model:* ${title}\n*Price:* ${formatPrice(product.price)}\n*Variant:* ${product.specs}\n\nIs it available for a store visit today?`
+        );
         return `
         <div class="product-card">
           <div class="product-image-wrapper">
             <div class="product-top">
-              <label class="compare-label"><input type="checkbox" class="compare-checkbox" data-index="${index}" onchange="toggleProductCompare(${index}, this)"> Compare</label>
-              <button class="wishlist-btn" type="button" onclick="toggleWishlist('${productId}', this)" aria-label="Add to wishlist"><i class="fa-regular fa-heart"></i></button>
+              <label class="compare-label"><input type="checkbox" class="compare-checkbox" data-index="${index}" data-compare-index="${index}"> Compare</label>
+              <button class="wishlist-btn" type="button" data-wishlist-id="${productId}" aria-label="Add to wishlist"><i class="fa-regular fa-heart"></i></button>
             </div>
-            <img src="images/mobiles/${product.slug}.png" onerror="phoneFallback(this, '${title.replace(/'/g, "\\'")}')" alt="${title}" class="product-image">
+            <img src="${product.image || "images/mobiles/" + product.slug + ".png"}" data-fallback-phone="1" alt="${title}" class="product-image" data-title="${title}" data-brand="${product.brand}" data-model="${product.model}" data-specs="${product.specs}" width="400" height="500" loading="lazy" decoding="async">
           </div>
           <div class="product-details">
+            <span class="stock-badge"><i class="fa-solid fa-circle-check"></i> In Stock at Store</span>
             <div class="product-name">${title}</div>
             <span class="product-spec">${specs}${product.colors ? ` | ${product.colors}` : ""}</span>
             <div class="product-price">${formatPrice(product.price)}</div>
             <div class="price-meta"><span class="mrp"><s>MRP ${formatPrice(mrp)}</s></span><span class="save-tag">Save ${formatPrice(mrp - product.price)}</span></div>
-            <a href="https://wa.me/919009909002?text=${encodeURIComponent(`I am interested in ${title} ${product.specs}`)}" 
-              target="_blank" class="btn-whatsapp">
+            <div class="emi-label"><i class="fa-solid fa-credit-card"></i> EMI from ${formatPrice(emiMonthly)}/mo</div>
+            <a href="https://wa.me/919009909002?text=${waMessage}"
+              target="_blank" rel="noopener noreferrer" class="btn-whatsapp">
               <i class="fa-brands fa-whatsapp"></i> Enquire on WhatsApp
             </a>
           </div>
@@ -790,6 +985,121 @@
     function goBack() {
       window.history.back();
     }
+
+    // --- Event delegation: ONE listener set on the grid wrapper (no per-card handlers) ---
+    (function initDelegation() {
+      const grid = () => document.getElementById("productsGrid");
+      const usePerf = () => window.PatidarPerf || null;
+
+      function bindAll() {
+        const g = grid();
+        if (!g || g.dataset.delegated === "1") return;
+        g.dataset.delegated = "1";
+        const Perf = usePerf();
+        const handlers = {
+          wishlist: (btn) => {
+            const id = btn.getAttribute("data-wishlist-id");
+            if (id) toggleWishlist(id, btn);
+          },
+          compare: (box) => {
+            const idx = parseInt(box.getAttribute("data-compare-index") || box.getAttribute("data-index") || "-1", 10);
+            if (!isNaN(idx) && idx >= 0) toggleProductCompare(idx, box);
+          }
+        };
+        if (Perf && Perf.delegateGrid) Perf.delegateGrid(g, handlers);
+        else {
+          g.addEventListener("click", (e) => {
+            const heart = e.target && e.target.closest ? e.target.closest("[data-wishlist-id]") : null;
+            if (heart) handlers.wishlist(heart);
+          });
+          g.addEventListener("change", (e) => {
+            const box = e.target;
+            if (box && box.matches && box.matches(".compare-checkbox")) handlers.compare(box);
+          });
+        }
+      }
+
+      // Delegated image fallback: capture-phase "error" on [data-fallback-phone].
+      document.addEventListener("error", (event) => {
+        const t = event.target;
+        if (t && t.tagName === "IMG" && t.hasAttribute("data-fallback-phone")) {
+          event.stopPropagation();
+          phoneFallback(t);
+        }
+      }, true);
+
+      // Debounced search + rAF render: smooth typing on low-end phones.
+      // NOTE: the markup keeps NO inline oninput hook; this listener owns search.
+      const searchBox = document.getElementById("searchInput");
+      if (searchBox) {
+        const Perf = usePerf();
+        const runSearch = () => {
+          const paint = () => handleSearch();
+          if (Perf && Perf.rafRender) Perf.rafRender(paint);
+          else if (window.requestAnimationFrame) window.requestAnimationFrame(paint);
+          else paint();
+        };
+        const debounced = Perf && Perf.debounce ? Perf.debounce(runSearch, 160) : runSearch;
+        searchBox.addEventListener("input", debounced, { passive: true });
+      }
+
+      // Warm the next navigation: prefetch category pages on hover/touch.
+      try {
+        const Perf = usePerf();
+        if (Perf && Perf.autoPrefetch) Perf.autoPrefetch('a[href$=".html"]');
+      } catch (err) { /* ignore */ }
+
+      window.__bindProductGrid = bindAll;
+      bindAll();
+    })();
+
+    // --- Session-persisted UI state: revisit/back restores list instantly ---
+    (function persistUi() {
+      const KEY = "mobiles-ui-v1";
+      const readCache = () => {
+        try {
+          if (window.PatidarPerf) return window.PatidarPerf.cacheGet(KEY);
+          return JSON.parse(sessionStorage.getItem("patidar-perf:v1:" + KEY) || "null");
+        } catch (err) { return null; }
+      };
+      const writeCache = (v) => {
+        try {
+          if (window.PatidarPerf) window.PatidarPerf.cacheSet(KEY, v);
+          else sessionStorage.setItem("patidar-perf:v1:" + KEY, JSON.stringify(v));
+        } catch (err) { /* ignore */ }
+      };
+      try {
+        const saved = readCache();
+        if (saved && typeof saved.query === "string" && saved.query) {
+          const box = document.getElementById("searchInput");
+          if (box) box.value = saved.query;
+        }
+        if (saved && (saved.sort === "low-to-high" || saved.sort === "high-to-low")) {
+          const m = document.getElementById("mobileSort");
+          const d = document.getElementById("sidebarSort");
+          if (m) m.value = saved.sort;
+          if (d) d.value = saved.sort;
+          currentSort = saved.sort;
+        }
+        if (saved && Array.isArray(saved.priceRange)) {
+          filteredProducts = allProducts.filter(
+            (p) => p.price >= saved.priceRange[0] && p.price <= saved.priceRange[1]
+          );
+          applySort();
+        } else if (saved && typeof saved.query === "string" && saved.query) {
+          handleSearch();
+        }
+      } catch (err) { /* corrupt cache: fall through to default render */ }
+      window.addEventListener("beforeunload", () => {
+        try {
+          writeCache({
+            query: document.getElementById("searchInput").value || "",
+            sort: currentSort,
+            priceRange: null
+          });
+        } catch (err) { /* ignore */ }
+      });
+    })();
 
     // --- Initialize ---
     renderProducts();
