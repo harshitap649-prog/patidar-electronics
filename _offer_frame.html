@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Festival deal hero banner - validation harness</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #111; font: 12px monospace; color: #eee; }
+  .row { display: flex; align-items: flex-start; gap: 8px; padding: 6px; }
+  iframe { border: 1px solid #444; background: #fff; display: block; flex: 0 0 auto; }
+  pre { margin: 0; padding: 4px; white-space: pre-wrap; word-break: break-all; }
+</style>
+</head>
+<body>
+<!-- Each iframe is an exact CSS viewport, so media queries evaluate per-device width. -->
+<div class="row" id="row"></div>
+<pre id="OFFER_HARNESS">OFFER_HARNESS::{"phase":"start"}</pre>
+
+<script>
+var SIZES = [
+  { w: 320, h: 760 },
+  { w: 360, h: 780 },
+  { w: 390, h: 844 },
+  { w: 414, h: 896 },
+  { w: 504, h: 760 },
+  { w: 600, h: 800 },
+  { w: 768, h: 900 },
+  { w: 1000, h: 900 },
+  { w: 1280, h: 900 }
+];
+
+var out = document.getElementById('OFFER_HARNESS');
+var results = [];
+var pending = SIZES.length;
+var failed = [];
+
+function r(el) { return el.getBoundingClientRect(); }
+function overlap(a, b) {
+  return !(a.bottom <= b.top + 1 || b.bottom <= a.top + 1 || a.right <= b.left + 1 || b.right <= a.left + 1);
+}
+function inside(child, parent) {
+  var c = r(child), p = r(parent);
+  return c.left >= p.left - 1 && c.right <= p.right + 1 && c.top >= p.top - 1 && c.bottom <= p.bottom + 1;
+}
+function overflowers(scope, win, limit) {
+  var bad = [];
+  [].slice.call(scope.querySelectorAll('*')).forEach(function (el) {
+    var rr = el.getBoundingClientRect();
+    if (rr.width === 0 || rr.height === 0) return;
+    if (rr.right > win.innerWidth + 1 || el.scrollWidth > el.clientWidth + 1) {
+      if (bad.length < (limit || 6)) {
+        bad.push(el.tagName + (typeof el.className === 'string' && el.className ? '.' + el.className.split(' ').join('.') : '') +
+          ' right=' + Math.round(rr.right) + ' sw=' + el.scrollWidth + '/' + el.clientWidth);
+      }
+    }
+  });
+  return bad;
+}
+
+
+function measure(w, doc, label) {
+  var res = { label: label, innerWidth: w.innerWidth };
+  try {
+    var banner = doc.querySelector('.claim-offer-section');
+    if (!banner) throw new Error('no .claim-offer-section');
+    var layout = doc.querySelector('.offer-layout');
+    var pill = doc.querySelector('.offer-pill');
+    var h3 = banner.querySelector('h3');
+    var p = banner.querySelector('p');
+    var timer = doc.querySelector('.offer-timer');
+    var countPills = [].slice.call(doc.querySelectorAll('.count-pill'));
+    var cta = doc.querySelector('.btn-claim');
+    var actions = doc.querySelector('.offer-actions');
+    var art = doc.querySelector('.offer-art');
+    var img = art && art.querySelector('img');
+    var gift = doc.querySelector('.offer-art-label');
+    var strip = doc.querySelector('.store-trust-strip');
+    var items = [].slice.call(doc.querySelectorAll('.trust-item'));
+
+    // --- layout structure ---
+    var cols = w.getComputedStyle(layout).gridTemplateColumns.split(/\s+/).filter(Boolean);
+    res.layoutCols = cols.length;
+    res.layoutColsWidths = cols.map(function (c) { return Math.round(parseFloat(c)); });
+    res.borderRadius = w.getComputedStyle(banner).borderTopLeftRadius;
+    res.backgroundImage = w.getComputedStyle(banner).backgroundImage.slice(0, 40);
+
+    // --- text overlap checks (pill / heading / subtext / timer / CTA) ---
+    res.overlaps = [];
+    if (overlap(r(pill), r(h3))) res.overlaps.push('pill-h3');
+    if (overlap(r(h3), r(p))) res.overlaps.push('h3-p');
+    if (overlap(r(p), r(timer))) res.overlaps.push('p-timer');
+    if (overlap(r(timer), r(actions))) res.overlaps.push('timer-actions');
+    res.h3Text = h3.textContent.trim().replace(/\s+/g, ' ');
+    res.h3Clipped = h3.scrollWidth - h3.clientWidth;
+    res.pClipped = p.scrollWidth - p.clientWidth;
+
+    // --- countdown pills ---
+    res.countPills = countPills.length;
+    res.countPillsVisible = countPills.filter(function (cp) { return r(cp).width > 10 && r(cp).height > 10; }).length;
+    res.cd = countPills.map(function (cp) {
+      return (cp.querySelector('strong') || {}).textContent + ' ' + (cp.querySelector('span') || {}).textContent;
+    });
+    res.cdAllInside = countPills.every(function (cp) { return inside(cp, timer); });
+
+    // --- CTA ---
+    res.ctaText = cta.textContent.trim().replace(/\s+/g, ' ');
+    res.ctaIcon = !!cta.querySelector('i.fa-whatsapp');
+    res.ctaInside = r(cta).right <= w.innerWidth + 1 && r(cta).left >= -1;
+
+    // --- promo image + gift badge ---
+    res.imgSrc = img ? img.getAttribute('src') : null;
+    res.imgLoaded = !!(img && img.complete && img.naturalWidth > 0);
+    var ar = r(art);
+    res.artBox = Math.round(ar.width) + 'x' + Math.round(ar.height);
+    res.artRadius = w.getComputedStyle(art).borderTopLeftRadius;
+    res.artOverflowX = art.scrollWidth - art.clientWidth;
+    res.giftVisible = !!(gift && r(gift).width > 0);
+    res.giftInside = !!(gift && inside(gift, art));
+    if (img) {
+      var ir = r(img);
+      res.imgBox = Math.round(ir.width) + 'x' + Math.round(ir.height);
+    }
+
+    // --- trust strip ---
+    res.stripItems = items.length;
+    res.stripCols = w.getComputedStyle(strip).gridTemplateColumns.split(/\s+/).filter(Boolean).length;
+    res.stripOverflowX = strip.scrollWidth - strip.clientWidth;
+    var sr = r(strip);
+    res.stripRight = Math.round(sr.right);
+    res.stripBeyondViewport = sr.right > w.innerWidth + 1;
+    res.trustLabels = items.map(function (it) {
+      var st = it.querySelector('.trust-text strong');
+      return st ? st.textContent : '?';
+
+    });
+    res.trustIcons = items.filter(function (it) { return !!it.querySelector('.trust-icon i'); }).length;
+
+    // --- overflow scoped to banner + strip ---
+    res.bannerOverflowX = banner.scrollWidth - banner.clientWidth;
+    res.bannerBeyondViewport = r(banner).right > w.innerWidth + 1;
+    res.overflowers = overflowers(banner, w).concat(overflowers(strip, w));
+
+    // --- doc-level (pre-existing location-btn 6px at 320 is known/out of scope) ---
+    var de = doc.documentElement;
+    res.docOverflowX = de.scrollWidth - de.clientWidth;
+    res.pageOverflowers = res.docOverflowX > 0 ? overflowers(doc.body, w, 6) : [];
+
+    // --- pass/fail ---
+    var pass = true;
+    var fail = '';
+    if (res.layoutCols !== (res.innerWidth > 767 ? 2 : 1)) { pass = false; fail = 'layoutCols=' + res.layoutCols; }
+    if (res.borderRadius !== '16px') { pass = false; fail += ' radius=' + res.borderRadius; }
+    if (res.overlaps.length) { pass = false; fail += ' overlap:' + res.overlaps.join(','); }
+    if (res.countPills !== 3 || res.countPillsVisible !== 3 || !res.cdAllInside) { pass = false; fail += ' countdown'; }
+    if (res.ctaText.indexOf('Claim Offer on WhatsApp') === -1 || !res.ctaIcon) { pass = false; fail += ' cta'; }
+    if (!res.imgLoaded || !res.giftVisible || !res.giftInside) { pass = false; fail += ' art'; }
+    if (res.stripItems !== 4 || res.trustIcons !== 4) { pass = false; fail += ' strip'; }
+    if (res.bannerOverflowX > 0 || res.stripOverflowX > 0 || res.bannerBeyondViewport || res.stripBeyondViewport) { pass = false; fail += ' overflow'; }
+    if (res.overflowers.length) { pass = false; fail += ' overflowers:' + res.overflowers.join('|'); }
+    var expectedStripCols = w.innerWidth <= 600 ? 2 : 4;
+    if (res.stripCols !== expectedStripCols) { pass = false; fail += ' stripCols=' + res.stripCols; }
+    res.pass = pass;
+    if (fail) res.fail = fail.trim();
+  } catch (e) {
+    res.error = String((e && e.message) || e);
+    res.pass = false;
+  }
+  return res;
+}
+
+function report(res) {
+  results.push(res);
+  if (results.length >= SIZES.length) {
+    out.textContent = 'OFFER_HARNESS::' + JSON.stringify({ failed: failed, results: results });
+  }
+}
+
+SIZES.forEach(function (s) {
+  var f = document.createElement('iframe');
+  f.setAttribute('width', s.w);
+  f.setAttribute('height', s.h);
+  f.style.width = s.w + 'px';
+  f.style.height = s.h + 'px';
+  f.src = 'index.html';
+  f.addEventListener('load', function () {
+    var doc = null;
+    try { doc = f.contentDocument; } catch (e) { doc = null; }
+    if (!doc || !doc.body) {
+      failed.push(s.w + ':cross-origin');
+      report({ label: String(s.w), error: 'cannot access iframe document', pass: false });
+      return;
+    }
+    var banner = doc.querySelector('.claim-offer-section');
+    try { if (banner) banner.scrollIntoView({ block: 'center' }); } catch (e) {}
+    // give the lazy image / web fonts a moment inside Chrome's virtual time budget
+    setTimeout(function () {
+      report(measure(f.contentWindow, doc, String(s.w)));
+    }, 800);
+  }, { once: true });
+  document.getElementById('row').appendChild(f);
+});
+</script>
+</body>
+</html>
+
+

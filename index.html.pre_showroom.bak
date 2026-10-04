@@ -11,17 +11,10 @@
   <!-- Google Fonts & Font Awesome Icons (stylesheets stay in <head> to avoid CLS) -->
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <!-- Shared ad styling (currently just the footer banner rules). -->
-  <link rel="stylesheet" href="style.css" />
   <!-- Shared perf helpers (page prefetch for instant category navigation).
        Not deferred: inline body scripts read window.PatidarPerf while parsing,
        and defer would run AFTER them, leaving every Perf hook dead. -->
   <script src="js/perf.js"></script>
-  <!-- Shared wishlist store: localStorage ("user_wishlist") persistence plus
-       heart/badge painting on this and every other page. -->
-  <script src="js/wishlist.js"></script>
-  <!-- Shared footer ad loader: requests exactly one unit per page. -->
-  <script src="js/ads.js"></script>
 
   <style>
     :root {
@@ -32,11 +25,6 @@
       --text-dark: #1C1D1F;
       --text-muted: #6A6F73;
       --border-color: #E2E8F0;
-      /* Multi-branch showroom theme (brand red + WhatsApp green) */
-      --branch-red: #E52E2E;
-      --branch-red-dark: #C41F1F;
-      --branch-green: #25D366;
-      --branch-ink: #111111;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -90,41 +78,6 @@
       transition: all 0.2s ease;
     }
     .location-btn:hover { background: var(--primary-red); color: #FFF; }
-
-    /* --- Wishlist entry point ---
-       The badge is painted by js/wishlist.js: [data-wishlist-count] is the
-       number, and the [data-wishlist-badge] wrapper is hidden at zero. */
-    .wishlist-link {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: #FFF5F5;
-      border: 1px solid #FEB2B2;
-      color: var(--primary-red);
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-weight: 700;
-      font-size: 0.88rem;
-      text-decoration: none;
-      transition: all 0.2s ease;
-    }
-    .wishlist-link:hover { background: var(--primary-red); color: #FFF; }
-    .wishlist-badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 18px;
-      height: 18px;
-      padding: 0 5px;
-      border-radius: 50px;
-      background: var(--primary-red);
-      color: #FFFFFF;
-      font-size: 0.68rem;
-      font-weight: 800;
-      line-height: 1;
-    }
-    .wishlist-link:hover .wishlist-badge { background: #FFFFFF; color: var(--primary-red); }
 
     /* --- Big Banner Slider (Croma Style) --- */
     .slider-container {
@@ -185,9 +138,16 @@
     .section-header h2 { font-size: 1.8rem; font-weight: 800; color: var(--text-dark); }
     .section-header p { color: var(--text-muted); font-size: 0.95rem; }
 
-    /* .ad-banner-slot / .desktop-banner-ad / .mobile-banner-ad lived here for the
-       in-feed ads. Both slots are gone; the single footer ad is styled in
-       style.css and loaded by js/ads.js. */
+    .ad-banner-slot { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px 8px; margin: 28px auto; text-align: center; max-width: 100%; overflow: hidden; }
+    .ad-sponsor-label { display: block; font-size: 10px; color: #9ca3af; letter-spacing: 0.5px; margin-bottom: 8px; text-transform: uppercase; font-weight: 600; }
+    @media (min-width: 769px) {
+      .desktop-banner-ad { display: flex !important; justify-content: center; }
+      .mobile-banner-ad { display: none !important; }
+    }
+    @media (max-width: 768px) {
+      .desktop-banner-ad { display: none !important; }
+      .mobile-banner-ad { display: flex !important; justify-content: center; }
+    }
 
     /* --- Happy Customers Grid (8 Images) --- */
     .customers-grid {
@@ -419,7 +379,7 @@
       box-shadow: 0 6px 18px rgba(220, 39, 67, 0.3);
     }
 
-    /* --- Location & Multi-Branch Showroom Section --- */
+    /* --- Location & Store Section --- */
     .store-section {
       background: var(--card-white);
       border-radius: 20px;
@@ -428,78 +388,49 @@
       margin-top: 40px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.03);
     }
-    .branch-header { text-align: left; margin-bottom: 18px; }
+    .store-layout { display: grid; grid-template-columns: minmax(280px, 0.85fr) minmax(0, 1.4fr); gap: 28px; align-items: stretch; }
+    .store-details { display: flex; flex-direction: column; justify-content: center; }
+    .store-hours { display: flex; align-items: center; gap: 12px; margin: 4px 0 22px; color: var(--text-muted); font-size: 0.9rem; font-weight: 600; }
+    .store-hours i { color: var(--primary-red); font-size: 1.1rem; }
+    .btn-directions { display: inline-flex; align-items: center; justify-content: center; gap: 9px; width: fit-content; padding: 12px 20px; border-radius: 50px; background: var(--primary-red); color: #FFF; text-decoration: none; font-weight: 800; font-size: 0.85rem; box-shadow: 0 6px 16px rgba(229,35,33,0.2); transition: transform 0.2s ease, background 0.2s ease; }
+    .btn-directions:hover { transform: translateY(-2px); background: var(--dark-red); }
+    .store-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+    .btn-call {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      width: fit-content;
+      padding: 12px 20px;
+      border-radius: 50px;
+      background: var(--text-dark);
+      color: #FFF;
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 0.85rem;
+      box-shadow: 0 6px 16px rgba(28, 29, 31, 0.22);
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+    .btn-call:hover { transform: translateY(-2px); background: #000000; }
 
-    /* Branch switcher tabs (Main Showroom / Mobile Shop) */
-    .branch-tabs { display: inline-flex; align-items: center; gap: 6px; padding: 6px; margin-bottom: 22px; background: #F3F4F6; border: 1px solid var(--border-color); border-radius: 50px; }
-    .branch-tab { display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-height: 44px; padding: 10px 20px; border: 1px solid transparent; border-radius: 50px; background: transparent; color: #4B5563; font-family: inherit; font-size: 0.86rem; font-weight: 800; cursor: pointer; transition: background 0.25s ease, color 0.25s ease, box-shadow 0.25s ease; }
-    .branch-tab i { font-size: 0.95rem; }
-    .branch-tab:hover { background: #FDE8E8; color: var(--branch-red); }
-    .branch-tab.is-active { background: linear-gradient(135deg, var(--branch-red) 0%, var(--branch-red-dark) 100%); color: #FFFFFF; box-shadow: 0 8px 18px rgba(229, 46, 46, 0.28); }
-    .branch-tab.is-active:hover { color: #FFFFFF; }
-
-    /* Two location cards, side by side */
-    .branch-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
-    .branch-card {
-      position: relative;
+    .store-info {
       display: flex;
       flex-direction: column;
-      min-width: 0;
-      padding: 22px;
-      background: #FFFFFF;
-      border: 1px solid var(--border-color);
-      border-radius: 20px;
-      box-shadow: 0 6px 18px rgba(17, 24, 39, 0.05);
-      cursor: pointer;
-      transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease;
+      gap: 10px;
+      margin-bottom: 20px;
     }
-    .branch-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; border-radius: 20px 20px 0 0; background: linear-gradient(90deg, var(--branch-accent) 0%, rgba(255, 255, 255, 0) 118%); opacity: 0; transition: opacity 0.28s ease; }
-    .branch-card[data-branch="mall"] { --branch-accent: #E52E2E; }
-    .branch-card[data-branch="mobile"] { --branch-accent: #25D366; }
-    .branch-card:hover { transform: translateY(-4px); box-shadow: 0 16px 32px rgba(17, 24, 39, 0.10); }
-    .branch-card.is-active { border-color: var(--branch-accent); box-shadow: 0 16px 34px rgba(229, 46, 46, 0.14); }
-    .branch-card[data-branch="mobile"].is-active { box-shadow: 0 16px 34px rgba(37, 211, 102, 0.16); }
-    .branch-card.is-active::before { opacity: 1; }
 
-    .branch-card-top { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 14px; margin-bottom: 18px; }
-    .branch-icon { flex: 0 0 48px; width: 48px; height: 48px; display: grid; place-items: center; border-radius: 14px; color: #FFFFFF; font-size: 1.15rem; box-shadow: 0 8px 18px rgba(17, 24, 39, 0.16); }
-    .branch-card[data-branch="mall"] .branch-icon { background: linear-gradient(135deg, #E52E2E 0%, #B81412 100%); }
-    .branch-card[data-branch="mobile"] .branch-icon { background: linear-gradient(135deg, #25D366 0%, #0F9D58 100%); }
-    .branch-brand { flex: 1 1 auto; min-width: 0; }
-    .branch-brand h3 { font-size: 1.05rem; font-weight: 800; line-height: 1.32; color: var(--text-dark); }
-    .branch-address { display: flex; align-items: flex-start; gap: 7px; margin-top: 6px; color: var(--text-muted); font-size: 0.85rem; font-weight: 600; line-height: 1.45; }
-    .branch-address i { margin-top: 3px; font-size: 0.82rem; color: var(--branch-accent); }
-    .branch-tag { flex: 0 0 auto; align-self: flex-start; padding: 5px 11px; border: 1px solid #FBD5D5; border-radius: 50px; background: #FEF2F2; color: #C81E1E; font-size: 0.6rem; font-weight: 900; letter-spacing: 0.7px; text-transform: uppercase; }
-    .branch-card[data-branch="mobile"] .branch-tag { border-color: #BBF7D0; background: #ECFDF3; color: #15803D; }
-    .store-hours { display: flex; align-items: center; gap: 10px; margin: auto 0 18px; padding: 10px 14px; border: 1px dashed var(--border-color); border-radius: 12px; background: #F8F9FA; color: var(--text-muted); font-size: 0.82rem; font-weight: 700; }
-    .store-hours i { color: var(--primary-red); font-size: 0.95rem; }
-    .store-actions { display: flex; flex-wrap: wrap; gap: 10px; }
-    .btn-call,
-    .btn-directions { flex: 1 1 150px; min-width: 0; display: inline-flex; align-items: center; justify-content: center; gap: 9px; padding: 12px 18px; border-radius: 50px; text-decoration: none; font-weight: 800; font-size: 0.82rem; transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease; }
-    .btn-call { background: linear-gradient(135deg, var(--branch-red) 0%, var(--branch-red-dark) 100%); color: #FFFFFF; box-shadow: 0 8px 18px rgba(229, 46, 46, 0.26); }
-    .btn-call:hover { transform: translateY(-2px); background: linear-gradient(135deg, var(--branch-red-dark) 0%, var(--branch-red-dark) 100%); box-shadow: 0 12px 24px rgba(229, 46, 46, 0.34); }
-    .btn-directions { background: var(--branch-ink); color: #FFFFFF; box-shadow: 0 8px 18px rgba(17, 17, 17, 0.22); }
-    .btn-directions:hover { transform: translateY(-2px); background: #000000; box-shadow: 0 12px 24px rgba(17, 17, 17, 0.30); }
+    .store-info-item { display: flex; align-items: center; gap: 12px; font-size: 1rem; font-weight: 600; color: var(--text-dark); }
+    .store-info-item i { font-size: 1.2rem; color: var(--primary-red); }
 
-    .store-info { display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px; }
-    .store-info-item { display: flex; align-items: center; gap: 11px; min-width: 0; font-size: 0.9rem; font-weight: 600; color: var(--text-dark); }
-    .store-info-item i { flex: 0 0 auto; font-size: 1rem; color: var(--branch-accent); }
-    .store-info-item a { color: inherit; text-decoration: none; }
-    .store-info-item a:hover { color: var(--branch-red); text-decoration: underline; }
-
-    .map-box { position: relative; margin-top: 20px; }
     .map-box iframe {
       width: 100%;
-      height: 340px;
+      height: 300px;
       border: 0;
-      border-radius: 18px;
-      box-shadow: 0 10px 28px rgba(17, 24, 39, 0.10);
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
       display: block;
-      background: #F3F4F6;
     }
-    .branch-map-badge { position: absolute; top: 14px; left: 14px; z-index: 2; display: inline-flex; align-items: center; gap: 9px; max-width: calc(100% - 28px); padding: 9px 15px; border-radius: 50px; background: rgba(17, 17, 17, 0.88); color: #FFFFFF; font-size: 0.76rem; font-weight: 700; backdrop-filter: blur(6px); }
-    .branch-map-badge i { flex: 0 0 auto; color: var(--branch-green); font-size: 0.86rem; }
-    .branch-map-badge span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
     /* --- Shop by Category Section --- */
     .category-grid {
@@ -896,7 +827,6 @@
 
     @media (max-width: 900px) {
       .customers-grid { grid-template-columns: repeat(2, 1fr); }
-      .branch-grid { grid-template-columns: 1fr; }
       .category-grid { grid-template-columns: repeat(3, 1fr); gap: 18px; }
       .reels-grid { grid-template-columns: repeat(2, 1fr); }
       .slider-container { height: 45vh; min-height: 280px; }
@@ -955,17 +885,9 @@
       .store-trust-strip { grid-template-columns: repeat(2, 1fr); gap: 10px; }
       .trust-item { flex-direction: column; align-items: flex-start; gap: 8px; padding: 12px 14px; }
       .category-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-      .branch-tabs { display: flex; width: 100%; gap: 5px; padding: 5px; }
-      .branch-tab { flex: 1 1 0; min-width: 0; padding: 10px 8px; font-size: 0.74rem; white-space: nowrap; }
-      .branch-tab i { font-size: 0.84rem; }
-      .branch-grid { gap: 14px; }
-      .branch-card { padding: 18px; border-radius: 18px; }
-      .branch-card-top { gap: 12px; margin-bottom: 16px; }
-      .branch-brand h3 { font-size: 0.98rem; }
+      .store-layout { grid-template-columns: 1fr; gap: 22px; }
       .store-section { padding: 22px 18px; }
-      .map-box { margin-top: 16px; }
-      .map-box iframe { height: 240px; border-radius: 16px; }
-      .branch-map-badge { top: 10px; left: 10px; padding: 8px 12px; font-size: 0.7rem; }
+      .map-box iframe { height: 240px; }
       .insta-section-bar { align-items: flex-start; margin-top: 28px; }
       .insta-section-title { gap: 8px; }
       .insta-section-title i { font-size: 1.45rem; }
@@ -994,10 +916,6 @@
       .menu-btn { min-height: 48px; min-width: 48px; padding: 8px 12px; border-radius: 12px; flex-shrink: 0; }
       .mobile-search-btn { display: grid; place-items: center; width: 48px; min-height: 48px; flex-shrink: 0; border: 1px solid var(--border-color); border-radius: 12px; background: #F3F4F6; color: var(--text-dark); font-size: 1rem; cursor: pointer; }
       .location-btn { min-height: 48px; padding: 8px 12px; border-radius: 12px; }
-      .nav-right { gap: 8px; }
-      /* Label collapses to the heart + badge only, same as mobiles.html. */
-      .wishlist-link { min-height: 48px; padding: 8px 10px; border-radius: 12px; }
-      .wishlist-link > span:not(.wishlist-badge) { display: none; }
       .section-container { padding: 28px 14px; }
       .category-grid { display: flex; gap: 12px; overflow-x: auto; padding: 4px 2px 12px; scroll-snap-type: x mandatory; scrollbar-width: none; }
       .category-grid::-webkit-scrollbar, .customers-grid::-webkit-scrollbar { display: none; }
@@ -1042,10 +960,6 @@
       <button class="mobile-search-btn" onclick="openCategoriesModal()" aria-label="Search categories"><i class="fa-solid fa-magnifying-glass"></i></button>
     </div>
     <div class="nav-right">
-      <a href="wishlist.html" class="wishlist-link" aria-label="Open my wishlist">
-        <i class="fa-regular fa-heart"></i> <span>Wishlist</span>
-        <span class="wishlist-badge" data-wishlist-badge><span data-wishlist-count>0</span></span>
-      </a>
       <a href="#store-location" class="location-btn">
         <i class="fa-solid fa-location-dot"></i> <span>Location</span>
       </a>
@@ -1180,10 +1094,33 @@
       </div>
     </div>
 
-    <!-- In-feed ad removed. Ads now live once, at the end of the document, so a
-         slow or blocked ad request can never insert a gap mid-page or push the
-         category grid / reviews apart. See the [data-footer-ad] block at the
-         bottom of this file. -->
+    <div class="ad-banner-slot">
+      <span class="ad-sponsor-label">SPONSORED</span>
+      <div class="desktop-banner-ad">
+        <script type="text/javascript">
+          atOptions = {
+            'key' : '614e3dec83fa1caa7a5cc128dd243077',
+            'format' : 'iframe',
+            'height' : 90,
+            'width' : 728,
+            'params' : {}
+          };
+        </script>
+        <script defer src="https://www.highrevenueformat.com/614e3dec83fa1caa7a5cc128dd243077/invoke.js"></script>
+      </div>
+      <div class="mobile-banner-ad">
+        <script type="text/javascript">
+          atOptions = {
+            'key' : '8eab59c1e8fcfbaf076a1cf600e7ec99',
+            'format' : 'iframe',
+            'height' : 250,
+            'width' : 300,
+            'params' : {}
+          };
+        </script>
+        <script defer src="https://www.highrevenueformat.com/8eab59c1e8fcfbaf076a1cf600e7ec99/invoke.js"></script>
+      </div>
+    </div>
 
     <!-- Categories Modal / Full Screen View -->
     <div class="categories-modal" id="categoriesModal">
@@ -1390,8 +1327,33 @@
       <div class="customer-card"><div class="customer-photo"><img src="images/image8.jpeg" alt="Happy customer at Patidar Mobile"><span class="photo-badge left"><i class="fa-solid fa-circle-check"></i> Verified Buyer</span><span class="photo-badge right"><i class="fa-solid fa-bag-shopping"></i> Verified Purchase</span></div><div class="customer-details"><div class="customer-rating" aria-label="5 out of 5 stars">★★★★★</div><div class="customer-caption">Smiles after an instant handover | Sagore</div><div class="customer-verified"><i class="fa-solid fa-shield-check"></i> 100% Genuine Handover</div></div></div>
     </div>
 
-    <!-- In-feed ad removed here too; the single footer ad at the bottom of this
-         file replaces it. -->
+    <div class="ad-banner-slot">
+      <span class="ad-sponsor-label">SPONSORED</span>
+      <div class="desktop-banner-ad">
+        <script type="text/javascript">
+          atOptions = {
+            'key' : '614e3dec83fa1caa7a5cc128dd243077',
+            'format' : 'iframe',
+            'height' : 90,
+            'width' : 728,
+            'params' : {}
+          };
+        </script>
+        <script defer src="https://www.highrevenueformat.com/614e3dec83fa1caa7a5cc128dd243077/invoke.js"></script>
+      </div>
+      <div class="mobile-banner-ad">
+        <script type="text/javascript">
+          atOptions = {
+            'key' : '8eab59c1e8fcfbaf076a1cf600e7ec99',
+            'format' : 'iframe',
+            'height' : 250,
+            'width' : 300,
+            'params' : {}
+          };
+        </script>
+        <script defer src="https://www.highrevenueformat.com/8eab59c1e8fcfbaf076a1cf600e7ec99/invoke.js"></script>
+      </div>
+    </div>
 
     <!-- Festival Deal Hero Banner -->
     <section class="claim-offer-section" id="festival-offer">
@@ -1494,76 +1456,30 @@
       </div>
     </div>
 
-    <!-- Location & Store Section (two-branch switcher) -->
+    <!-- Location & Store Section -->
     <div class="store-section" id="store-location">
-      <div class="section-header branch-header">
-        <h2>Visit Our Showroom</h2>
-        <p>Two branches in Sagore - electronics, furniture and mobiles under one roof</p>
-      </div>
-
-      <div class="branch-tabs" role="group" aria-label="Choose a branch to show on the map">
-        <button type="button" class="branch-tab is-active" data-branch="mall" aria-pressed="true" onclick="selectBranch('mall')"><i class="fa-solid fa-store"></i> Main Showroom</button>
-        <button type="button" class="branch-tab" data-branch="mobile" aria-pressed="false" onclick="selectBranch('mobile')"><i class="fa-solid fa-mobile-screen-button"></i> Mobile Shop</button>
-      </div>
-
-      <div class="branch-grid">
-        <article class="branch-card is-active" data-branch="mall" data-map-label="Main Showroom - Bus Stand, Sagore" data-map-src="https://maps.google.com/maps?q=Sagore%20Bus%20Stand&amp;t=&amp;z=15&amp;ie=UTF8&amp;iwloc=&amp;output=embed" onclick="selectBranch('mall')" title="Show Patidar Electronics &amp; Furniture Mall on the map">
-          <div class="branch-card-top">
-            <span class="branch-icon"><i class="fa-solid fa-store"></i></span>
-            <div class="branch-brand">
-              <h3>Patidar Electronics &amp; Furniture Mall</h3>
-              <p class="branch-address"><i class="fa-solid fa-location-dot"></i><span>Bus Stand, Sagore</span></p>
-            </div>
-            <span class="branch-tag">Main Showroom</span>
+      <div class="store-layout">
+        <div class="store-details">
+          <div class="section-header" style="text-align: left; margin-bottom: 20px;">
+            <h2>Visit Our Showroom</h2>
+            <p>Patidar Mobile &amp; Electronic Furniture Mall</p>
           </div>
           <div class="store-info">
-            <div class="store-info-item"><i class="fa-solid fa-phone"></i><span><a href="tel:+919926762999">99267 62999</a> / <a href="tel:+919009909002">90099 09002</a></span></div>
-            <div class="store-info-item"><i class="fa-solid fa-couch"></i><span>Electronics, Furniture &amp; Home Appliances</span></div>
+            <div class="store-info-item"><i class="fa-solid fa-shop"></i><span>Aapki Apni Dukan | Bus Stand, Sagore</span></div>
+            <div class="store-info-item"><i class="fa-solid fa-phone"></i><span>99267 62999 / 90099 09002</span></div>
           </div>
           <div class="store-hours"><i class="fa-regular fa-clock"></i><span>Opening Hours: 9:00 AM - 9:00 PM</span></div>
           <div class="store-actions">
             <a class="btn-call" href="tel:+919926762999"><i class="fa-solid fa-phone"></i> Call Showroom</a>
             <a class="btn-directions" href="https://www.google.com/maps/search/?api=1&amp;query=Sagore%20Bus%20Stand" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-location-dot"></i> Open in Google Maps</a>
           </div>
-        </article>
-
-        <article class="branch-card" data-branch="mobile" data-map-label="Mobile Gallery - Market Road, Sagore" data-map-src="https://maps.google.com/maps?q=Patidar%20Mobile%20Gallery%2C%20Sagore&amp;t=&amp;z=15&amp;ie=UTF8&amp;iwloc=&amp;output=embed" onclick="selectBranch('mobile')" title="Show Patidar Mobile Gallery on the map">
-          <div class="branch-card-top">
-            <span class="branch-icon"><i class="fa-solid fa-mobile-screen-button"></i></span>
-            <div class="branch-brand">
-              <h3>Patidar Mobile Gallery</h3>
-              <p class="branch-address"><i class="fa-solid fa-location-dot"></i><span>Near Bus Stand / Market Road, Sagore</span></p>
-            </div>
-            <span class="branch-tag">Mobile Shop</span>
-          </div>
-          <div class="store-info">
-            <div class="store-info-item"><i class="fa-solid fa-phone"></i><span><a href="tel:+919926762999">99267 62999</a></span></div>
-            <div class="store-info-item"><i class="fa-solid fa-mobile-screen"></i><span>Smartphones, Accessories &amp; Recharge</span></div>
-          </div>
-          <div class="store-hours"><i class="fa-regular fa-clock"></i><span>Opening Hours: 9:00 AM - 9:00 PM</span></div>
-          <div class="store-actions">
-            <a class="btn-call" href="tel:+919926762999"><i class="fa-solid fa-phone"></i> Call Shop</a>
-            <a class="btn-directions" href="https://www.google.com/maps/search/?api=1&amp;query=Patidar%20Mobile%20Gallery%2C%20Sagore" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-location-dot"></i> Open in Google Maps</a>
-          </div>
-        </article>
-      </div>
-
-      <div class="map-box">
-        <div class="branch-map-badge"><i class="fa-solid fa-map-location-dot"></i><span id="branchMapLabel">Main Showroom - Bus Stand, Sagore</span></div>
-        <iframe id="branchMapFrame" src="https://maps.google.com/maps?q=Sagore%20Bus%20Stand&amp;t=&amp;z=15&amp;ie=UTF8&amp;iwloc=&amp;output=embed" title="Patidar Electronics &amp; Furniture Mall, Bus Stand Sagore on Google Maps" allowfullscreen="" loading="lazy"></iframe>
+        </div>
+        <div class="map-box">
+          <iframe src="https://maps.google.com/maps?q=Sagore%20Bus%20Stand&amp;t=&amp;z=15&amp;ie=UTF8&amp;iwloc=&amp;output=embed" title="Patidar Mobile &amp; Electronics showroom location on Google Maps" allowfullscreen="" loading="lazy"></iframe>
+        </div>
       </div>
     </div>
 
-  </div>
-
-  <!-- Single footer ad, last element in the document. Placed after the store /
-       location section and outside every content section so no ad request can
-       alter the flow of the page above it. js/ads.js requests exactly one unit
-       (728x90 desktop / 320x50 mobile) and style.css holds the breakpoint. -->
-  <div class="footer-ad-wrapper" data-footer-ad>
-    <span class="ad-sponsor-label">SPONSORED</span>
-    <div class="ad-desktop-only" data-ad-slot="desktop"></div>
-    <div class="ad-mobile-only" data-ad-slot="mobile"></div>
   </div>
 
   <nav class="mobile-app-nav" aria-label="Mobile app navigation">
@@ -1590,44 +1506,6 @@
     }
 
     initializeBottomNavigation();
-
-    /* --- Showroom Branch Switcher (one map, two branch pins) --- */
-    const branchState = { active: 'mall' };
-
-    function selectBranch(branch) {
-      const frame = document.getElementById('branchMapFrame');
-      const badge = document.getElementById('branchMapLabel');
-      let activeCard = null;
-
-      document.querySelectorAll('.branch-card').forEach(card => {
-        const isOn = card.dataset.branch === branch;
-        card.classList.toggle('is-active', isOn);
-        if (isOn) activeCard = card;
-      });
-
-      document.querySelectorAll('.branch-tab').forEach(tab => {
-        const isOn = tab.dataset.branch === branch;
-        tab.classList.toggle('is-active', isOn);
-        tab.setAttribute('aria-pressed', isOn ? 'true' : 'false');
-      });
-
-      if (!activeCard) return;
-
-      const label = activeCard.dataset.mapLabel;
-      const src = activeCard.dataset.mapSrc;
-      if (badge && label) badge.textContent = label;
-
-      // Re-point the single embed only when the branch really changed, so the
-      // map never reloads while it already shows the right pin.
-      if (frame && src && branch !== branchState.active) {
-        frame.setAttribute('src', src);
-        frame.setAttribute('title', (label || 'Patidar Mobile & Electronics') + ' on Google Maps');
-      }
-      branchState.active = branch;
-    }
-
-    // Keep the tabs, cards and map badge in sync with the default branch.
-    if (document.getElementById('branchMapFrame')) selectBranch(branchState.active);
 
     /* --- Image Slider Logic --- */
     let currentSlide = 0;

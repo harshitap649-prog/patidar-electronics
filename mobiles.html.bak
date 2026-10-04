@@ -4,25 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Mobiles | Patidar Electronics</title>
-  <!-- Performance: preconnect third-party origins used below -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
-  <!-- Google Fonts & Font Awesome Icons (stylesheets stay in <head> to avoid CLS) -->
+  <!-- Google Fonts & Font Awesome Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <!-- Shared ad styling (currently just the footer banner rules). -->
-  <link rel="stylesheet" href="style.css" />
-  <!-- Shared perf helpers (debounce, rAF render, sessionStorage cache, prefetch).
-       Not deferred: inline body scripts read window.PatidarPerf while parsing,
-       and defer would run AFTER them, leaving every Perf hook dead. -->
-  <script src="js/perf.js"></script>
-  <!-- Shared wishlist store: localStorage ("user_wishlist") persistence plus
-       heart/badge painting on this and every other page. -->
-  <script src="js/wishlist.js"></script>
-  <!-- Shared Back handler (referrer-aware, falls back to index.html). Defines
-       window.goBack, which the header button below calls. -->
-  <script src="js/nav.js"></script>
 
   <style>
     :root {
@@ -96,50 +80,6 @@
 
     .compare-btn:hover { background: var(--dark-red); }
     .compare-btn:disabled { background: #CCC; cursor: not-allowed; }
-
-    /* --- Wishlist entry point (header) ---
-       The badge is painted by js/wishlist.js: [data-wishlist-count] is the
-       number, and the [data-wishlist-badge] wrapper is hidden at zero. */
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .wishlist-link {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 12px;
-      border: 1px solid #FEB2B2;
-      border-radius: 6px;
-      background: #FFF5F5;
-      color: var(--primary-red);
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-decoration: none;
-      transition: background 0.2s, color 0.2s;
-    }
-
-    .wishlist-link:hover { background: var(--primary-red); color: #FFFFFF; }
-
-    .wishlist-badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 18px;
-      height: 18px;
-      padding: 0 5px;
-      border-radius: 50px;
-      background: var(--primary-red);
-      color: #FFFFFF;
-      font-size: 0.68rem;
-      font-weight: 800;
-      line-height: 1;
-    }
-
-    .wishlist-link:hover .wishlist-badge { background: #FFFFFF; color: var(--primary-red); }
 
     /* --- Search Bar --- */
     .search-wrapper {
@@ -313,12 +253,8 @@
       .products-grid { grid-template-columns: repeat(4, 1fr); }
     }
 
-    /* --- Product Card ---
-       Keep in sync with category.html and wishlist.html: the same card renders
-       on all three, so these values are shared deliberately, not copied. */
+    /* --- Product Card --- */
     .product-card {
-      content-visibility: auto;
-      contain-intrinsic-size: auto 520px;
       background: var(--card-white);
       border: 1px solid #EAECF0;
       border-radius: 10px;
@@ -327,11 +263,6 @@
       display: flex;
       flex-direction: column;
       box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-      /* Grid rows are already equal height (default align-items:stretch); this
-         lets the CTA sit flush at the bottom of every card in a row. Without it
-         a card with shorter copy stops growing and its CTA floats mid-card
-         instead of pinning to the bottom edge. */
-      height: 100%;
     }
 
     .product-card:hover {
@@ -339,14 +270,10 @@
       transform: translateY(-2px);
     }
 
-    /* The action header above is normal flow, so the photo can never sit under
-       the compare/wishlist controls. The margin just keeps a visible gap
-       between the header row and the image area. */
     .product-image-wrapper {
       position: relative;
       background: #F9FAFB;
       height: 220px;
-      margin-top: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -369,7 +296,16 @@
       opacity: 0.85;
     }
 
-    /* .compare-checkbox is styled with the card action header further down. */
+    .compare-checkbox {
+      position: absolute;
+      top: 8px;
+      right: 10px;
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      accent-color: var(--primary-red);
+      z-index: 2;
+    }
 
     .product-details {
       padding: 12px;
@@ -410,73 +346,32 @@
       margin-bottom: 10px;
     }
 
-    /* --- Card action header: Compare (left) + wishlist (right) ---
-       This row used to be `.product-top`, an absolutely positioned overlay
-       sitting on top of the photo, and `.compare-checkbox` was itself
-       position:absolute. Its containing block was therefore `.product-top`,
-       not the image, so the checkbox sat at the overlay's top-right corner -
-       exactly on top of the heart button. Both are now static flex children of
-       this normal-flow header, so Compare and Wishlist always share one row,
-       at opposite ends, and neither can overlap the photo. */
-    .card-actions-header {
+    .product-top {
+      position: absolute;
+      inset: 8px 10px auto;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      width: 100%;
-      padding: 8px 12px;
-      box-sizing: border-box;
-      flex: 0 0 auto;
-      gap: 8px;
-      background: var(--card-white);
+      z-index: 1;
     }
 
-    /* Left group: the checkbox and the word "Compare" stay together. */
     .compare-label {
       display: flex;
       align-items: center;
-      justify-content: flex-start;
       gap: 5px;
-      margin: 0;
       color: var(--text-muted);
       font-size: 0.7rem;
       font-weight: 600;
-      cursor: pointer;
-      white-space: nowrap;
-      flex: 0 1 auto;
-      min-width: 0;
     }
 
-    .compare-checkbox {
-      position: static;
-      width: 16px;
-      height: 16px;
-      margin: 0;
-      cursor: pointer;
-      accent-color: var(--primary-red);
-      flex: 0 0 auto;
-    }
-
-    /* Right group: the heart is pinned to the trailing edge of the same row. */
     .wishlist-btn {
-      margin-left: auto;
-      flex: 0 0 auto;
       width: 30px;
       height: 30px;
-      /* Opt out of this file's blanket `button, a { min-height: 48px }` tap-target
-         rule in the <=767px block below. That rule is meant for page-level
-         actions; applied to this 30px circular card heart it stretched the button
-         to 48px tall. That was harmless while the row was an absolute overlay,
-         but in normal flow it inflated the action header to 64px and broke the
-         single-row alignment. The compact circle keeps the header one line. */
-      min-height: 0;
       border: 1px solid var(--border-color);
       border-radius: 50%;
       background: #FFFFFF;
       color: #4B5563;
       cursor: pointer;
-      display: grid;
-      place-items: center;
-      font-size: 0.8rem;
     }
 
     .wishlist-btn.active,
@@ -544,9 +439,6 @@
       text-decoration: none;
       text-align: center;
       width: 100%;
-      /* Pushes the CTA to the bottom of the flex column so buttons align across
-         a row, matching category.html and wishlist.html. */
-      margin-top: auto;
     }
 
     .btn-whatsapp:hover {
@@ -571,11 +463,9 @@
       body { padding-bottom: 0 !important; }
       .header { min-height: 60px; padding: 10px 16px; background: rgba(255,255,255,0.95); border-bottom: 1px solid #F0F0F0; backdrop-filter: blur(10px); z-index: 1000; }
       .header-top { min-height: 48px; margin-bottom: 8px; }
-      .header-back, .compare-btn, .wishlist-link { min-height: 48px; border-radius: 12px; }
+      .header-back, .compare-btn { min-height: 48px; border-radius: 12px; }
       .header-back { padding: 8px 10px; }
       .compare-btn { padding: 8px 12px; }
-      .wishlist-link { padding: 8px 10px; }
-      .wishlist-link .wishlist-link-text { display: none; }
       .search-input { min-height: 48px; border-radius: 12px; }
       .filters-wrapper { scrollbar-width: none; padding-bottom: 4px; scroll-snap-type: x mandatory; }
       .filters-wrapper::-webkit-scrollbar { display: none; }
@@ -643,23 +533,6 @@
         height: 140px;
       }
 
-      /* Two-up grid makes cards narrow; tighten the action row so Compare and
-         the heart keep fitting on one line without wrapping. */
-      .card-actions-header {
-        padding: 6px 8px;
-        gap: 6px;
-      }
-
-      .compare-label {
-        font-size: 0.65rem;
-      }
-
-      .wishlist-btn {
-        width: 28px;
-        height: 28px;
-        font-size: 0.75rem;
-      }
-
       .product-details {
         padding: 10px;
       }
@@ -688,20 +561,13 @@
         <i class="fa-solid fa-chevron-left"></i> Back
       </button>
       <div class="header-title">Mobiles & Tablets</div>
-      <div class="header-actions">
-        <a class="wishlist-link" href="wishlist.html" aria-label="Open my wishlist">
-          <i class="fa-regular fa-heart"></i>
-          <span class="wishlist-link-text">Wishlist</span>
-          <span class="wishlist-badge" data-wishlist-badge><span data-wishlist-count>0</span></span>
-        </a>
-        <button class="compare-btn" id="compareBtn" onclick="toggleCompare()" disabled>
-          <i class="fa-solid fa-code-compare"></i> Compare
-        </button>
-      </div>
+      <button class="compare-btn" id="compareBtn" onclick="toggleCompare()" disabled>
+        <i class="fa-solid fa-code-compare"></i> Compare
+      </button>
     </div>
 
     <div class="search-wrapper">
-      <input type="text" class="search-input" id="searchInput" placeholder="Search mobiles by model..." autocomplete="off">
+      <input type="text" class="search-input" id="searchInput" placeholder="Search mobiles by model..." oninput="handleSearch()">
     </div>
 
     <div class="filters-wrapper">
@@ -764,31 +630,26 @@
   <script>
     // --- Product Data ---
     const products = [];
-    function addProduct(brand, model, variants, colors, image = "", imageFallback = "") {
+    function addProduct(brand, model, variants, colors, image = "") {
       variants.forEach(([specs, price], index) => products.push({
         brand, model, specs, price, colors: Array.isArray(colors) ? colors[index] : colors,
         image: image,
-        imageFallback: imageFallback,
         slug: `${brand}-${model}`.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
       }));
     }
     // -----------------------------------------------------------------------
-    // CUSTOM PRODUCT IMAGES - optional 5th + 6th arguments: image, imageFallback
+    // CUSTOM PRODUCT IMAGES - optional 5th argument: image
     // -----------------------------------------------------------------------
     // Each card resolves its picture in this order:
     //   1. the "image" value passed to addProduct()  -> local path OR remote URL
-    //      (e.g. "assets/images/products/nothing-phone-2a.png" - transparent PNG
-    //      render showing the glyph-interface transparent back panel)
-    //   2. the "imageFallback" value (6th arg)       -> secondary remote URL used
-    //      when the local asset is missing (e.g. GSMArena bigpic)
-    //   3. images/mobiles/<slug>.png                 -> <slug> = brand-model, lowercase,
+    //   2. images/mobiles/<slug>.png                 -> <slug> = brand-model, lowercase,
     //                                                   non-alphanumerics collapsed to "-"
     //                                                   (e.g. "Oppo Reno 12 Pro 5G" -> oppo-reno-12-pro-5g.png)
-    //   4. an auto-generated branded card            -> offline safe, never a broken frame
-    //   5. a transparent phone outline               -> last resort
+    //   3. an auto-generated branded card            -> offline safe, never a broken frame
+    //   4. a transparent phone outline               -> last resort (phoneFallback)
     //
     // A real photo can still be supplied through the addProduct(brand, model,
-    // variants, colors, image, imageFallback) "image" / "imageFallback" arguments.
+    // variants, colors, image) "image" argument.
     // -----------------------------------------------------------------------
 
     // NOTE ON DATA PROVENANCE:
@@ -799,79 +660,47 @@
     // -----------------------------------------------------------------------
 
     addProduct("Nothing", "Phone (3a) Lite", [["8/128GB", 27999], ["8/256GB", 29999]], "Black/White/Blue",
-      "assets/images/products/nothing-phone-2a.png",
-      "https://fdn2.gsmarena.com/vv/bigpic/nothing-phone-2a.jpg");
-    addProduct("Nothing", "Phone (4a)", [["8/128GB", 44999], ["8/256GB", 49999], ["12/256GB", 50999]], ["Black/White/Blue", "Black/White/Blue/Pink", "Black/White/Blue/Pink"], "assets/images/products/nothing-phone-4a.jpg");
-    addProduct("Nothing", "Phone (4a) Pro", [["8/128GB", 54999], ["8/256GB", 57999], ["12/256GB", 59999]], ["Black/Silver", "Black/Silver", "Black/Silver/Pink"], "assets/images/products/nothing-phone-4a-pro.jpg");
-    addProduct("Nothing", "Phone (4b)", [["8/128GB", 39999], ["8/256GB", 40999]], "Black/White/Blue", "assets/images/products/nothing-phone-4b.jpg");
+      "images/mobile img.png");
+    addProduct("Nothing", "Phone (4a)", [["8/128GB", 44999], ["8/256GB", 49999], ["12/256GB", 50999]], ["Black/White/Blue", "Black/White/Blue/Pink", "Black/White/Blue/Pink"]), "assets/images/products/nothing-phone-4a.jpg";
+    addProduct("Nothing", "Phone (4a) Pro", [["8/128GB", 54999], ["8/256GB", 57999], ["12/256GB", 59999]], ["Black/Silver", "Black/Silver", "Black/Silver/Pink"]), "assets/images/products/nothing-phone-4a-pro.jpg";
+    addProduct("Nothing", "Phone (4b)", [["8/128GB", 39999], ["8/256GB", 40999]], "Black/White/Blue");
 
-    addProduct("Oppo", "A60 4G", [["4+64GB", 14599], ["4+128GB", 15599], ["6+128GB", 17599]], "", "assets/images/products/oppo-a60-4g.jpg");
-    addProduct("Oppo", "A58", [["6+128GB", 13999]], "", "assets/images/products/oppo-a58.jpg");
+    addProduct("Oppo", "A60 4G", [["4+64GB", 14599], ["4+128GB", 15599], ["6+128GB", 17599]], "");
+    addProduct("Oppo", "A58", [["6+128GB", 13999]], ""), "assets/images/products/oppo-a58.jpg";
     addProduct("Oppo", "F25 Pro 5G", [["8+128GB", 23999], ["8+256GB", 25999]], "");
     addProduct("Oppo", "F27 5G", [["8+128GB", 22999], ["8+256GB", 24999]], "");
     addProduct("Oppo", "F27 Pro+ 5G", [["8+128GB", 27999], ["8+256GB", 29999]], "");
-    addProduct("Oppo", "Reno 12 5G", [["8+256GB", 32999], ["12+256GB", 35999]], "", "assets/images/products/oppo-reno-12-5g.jpg");
-    addProduct("Oppo", "Reno 12 Pro 5G", [["12+256GB", 36999], ["12+512GB", 40999]], "", "assets/images/products/oppo-reno-12-pro-5g.jpg");
+    addProduct("Oppo", "Reno 12 5G", [["8+256GB", 32999], ["12+256GB", 35999]], "");
+    addProduct("Oppo", "Reno 12 Pro 5G", [["12+256GB", 36999], ["12+512GB", 40999]], "");
     addProduct("Oppo", "Reno 12 Pro Mini 5G", [["8+128GB", 30999], ["8+256GB", 32999]], "");
-    addProduct("Oppo", "Reno 13 5G", [["12+256GB", 37999]], "", "assets/images/products/oppo-reno-13-5g.jpg");
-    addProduct("Oppo", "Reno 13 Pro 5G", [["12+256GB", 44999], ["12+512GB", 49999]], "", "assets/images/products/oppo-reno-13-pro-5g.jpg");
-    addProduct("Oppo", "Find X8 5G", [["12+256GB", 64999], ["12+512GB", 69999]], "", "assets/images/products/oppo-find-x8-5g.jpg");
-    addProduct("Oppo", "Find X8 Pro 5G", [["16+512GB", 99999]], "", "assets/images/products/oppo-find-x8-pro-5g.jpg");
-    addProduct("Oppo", "Find X8 Pro Ultra", [["16+1TB", 114999]], "",
-      "assets/images/products/oppo-find-x8-pro-ultra.jpg",
-      "https://fdn2.gsmarena.com/vv/bigpic/oppo-find-x8-pro.jpg");
+    addProduct("Oppo", "Reno 13 5G", [["12+256GB", 37999]], "");
+    addProduct("Oppo", "Reno 13 Pro 5G", [["12+256GB", 44999], ["12+512GB", 49999]], "");
+    addProduct("Oppo", "Find X8 5G", [["12+256GB", 64999], ["12+512GB", 69999]], "");
+    addProduct("Oppo", "Find X8 Pro 5G", [["16+512GB", 99999]], "");
+    addProduct("Oppo", "Find X8 Pro Ultra", [["16+1TB", 114999]], "");
 
-    addProduct("Realme", "P4 Lite 5G", [["4+64GB", 17099], ["4+128GB", 18099], ["6+128GB", 22099]], "",
-      "assets/images/products/realme-p4-lite-5g.jpg",
-      "https://fdn2.gsmarena.com/vv/bigpic/realme-p1-5g.jpg");
-    addProduct("Realme", "P4 5G", [["4+64GB", 19999], ["4+128GB", 21500], ["6+128GB", 23999], ["6+256GB", 26950]], "",
-      "assets/images/products/realme-p4-5g.jpg",
-      "https://fdn2.gsmarena.com/vv/bigpic/realme-p1-5g.jpg");
-    addProduct("Realme", "P4X", [["8+128GB", 27999], ["8+256GB", 32999]], "",
-      "assets/images/products/realme-p4x.jpg",
-      "https://fdn2.gsmarena.com/vv/bigpic/realme-p1-pro.jpg");
-    addProduct("Realme", "P4 Power", [["8+128GB", 31000], ["8+256GB", 34000]], "",
-      "assets/images/products/realme-p4-power.jpg",
-      "https://fdn2.gsmarena.com/vv/bigpic/realme-p1-pro.jpg");
-    addProduct("Realme", "P4S New", [["4+64GB", 26999], ["4+128GB", 29999], ["6+128GB", 35999], ["12+256GB", 41000]], "",
-      "https://fdn2.gsmarena.com/vv/bigpic/realme-p1-pro.jpg");
-    addProduct("Realme", "C1001 New", [["4+64GB", 10999]], "",
-      "https://fdn2.gsmarena.com/vv/bigpic/realme-c53.jpg");
-    addProduct("Realme", "C100X", [["4+64GB", 16999]], "",
-      "https://fdn2.gsmarena.com/vv/bigpic/realme-c53.jpg");
-    addProduct("Realme", "C83 5G", [["4+64GB", 19450], ["4+128GB", 21499], ["4+128GB", 24455]], "",
-      "assets/images/products/realme-c83-5g.jpg",
-      "https://fdn2.gsmarena.com/vv/bigpic/realme-c65.jpg");
-    addProduct("Realme", "13x 5G", [["4+128GB", 25999], ["6+128GB", 27999], ["6+256GB", 30999]], "",
-      "assets/images/products/realme-13x-5g.jpg",
-      "https://fdn2.gsmarena.com/vv/bigpic/realme-12x.jpg");
-    addProduct("Realme", "15T 5G", [["6+128GB", 20999], ["8+128GB", 22999]], "",
-      "assets/images/products/realme-15t-5g.jpg",
-      "https://fdn2.gsmarena.com/vv/bigpic/realme-12-5g.jpg");
-    addProduct("Realme", "16 5G", [["8+128GB", 28999], ["8+256GB", 30999], ["12+256GB", 32999]], "",
-      "assets/images/products/realme-16-5g.jpg",
-      "https://fdn2.gsmarena.com/vv/bigpic/realme-12-5g.jpg");
-    addProduct("Realme", "16 Pro 5G", [["8+128GB", 44999], ["8+256GB", 46000], ["12+256GB", 49999]], "",
-      "https://fdn2.gsmarena.com/vv/bigpic/realme-12-pro.jpg",
-      "assets/images/products/realme-16-pro.jpg");
-    addProduct("Realme", "16 Pro+ 5G", [["8+128GB", 50999], ["8+256GB", 53000], ["12+512GB", 59999]], "",
-      "assets/images/products/realme-16-pro-plus-5g.jpg",
-      "https://fdn2.gsmarena.com/vv/bigpic/realme-12-pro-plus.jpg");
-    addProduct("Realme", "GT 8 Pro", [["16+512GB", 70999]], "",
-      "assets/images/products/realme-gt-8-pro.jpg",
-      "https://fdn2.gsmarena.com/vv/bigpic/realme-gt5-pro.jpg");
-    addProduct("Realme", "Pad 3 5G LTE", [["6+128GB", 31999], ["8+128GB", 32999]], "",
-      "assets/images/products/realme-pad-3.jpg",
-      "https://fdn2.gsmarena.com/vv/bigpic/realme-pad.jpg");
+    addProduct("Realme", "P4 Lite 5G", [["4+64GB", 17099], ["4+128GB", 18099], ["6+128GB", 22099]], "");
+    addProduct("Realme", "P4 5G", [["4+64GB", 19999], ["4+128GB", 21500], ["6+128GB", 23999], ["6+256GB", 26950]], "");
+    addProduct("Realme", "P4X", [["8+128GB", 27999], ["8+256GB", 32999]], "");
+    addProduct("Realme", "P4 Power", [["8+128GB", 31000], ["8+256GB", 34000]], "");
+    addProduct("Realme", "P4S New", [["4+64GB", 26999], ["4+128GB", 29999], ["6+128GB", 35999], ["12+256GB", 41000]], "");
+    addProduct("Realme", "C1001 New", [["4+64GB", 10999]], "");
+    addProduct("Realme", "C100X", [["4+64GB", 16999]], "");
+    addProduct("Realme", "C83 5G", [["4+64GB", 19450], ["4+128GB", 21499], ["4+128GB", 24455]], "");
+    addProduct("Realme", "13x 5G", [["4+128GB", 25999], ["6+128GB", 27999], ["6+256GB", 30999]], "");
+    addProduct("Realme", "15T 5G", [["6+128GB", 20999], ["8+128GB", 22999]], "");
+    addProduct("Realme", "16 5G", [["8+128GB", 28999], ["8+256GB", 30999], ["12+256GB", 32999]], "");
+    addProduct("Realme", "16 Pro 5G", [["8+128GB", 44999], ["8+256GB", 46000], ["12+256GB", 49999]], "");
+    addProduct("Realme", "16 Pro+ 5G", [["8+128GB", 50999], ["8+256GB", 53000], ["12+512GB", 59999]], "");
+    addProduct("Realme", "GT 8 Pro", [["16+512GB", 70999]], "");
+    addProduct("Realme", "Pad 3 5G LTE", [["6+128GB", 31999], ["8+128GB", 32999]], "");
 
     const allProducts = products;
 
     let filteredProducts = [...allProducts];
     let currentSort = "popularity";
     let selectedForCompare = new Set();
-    // Liked products live in the shared store (js/wishlist.js -> localStorage
-    // "user_wishlist"), not in a page-local Set, so reloads and other pages
-    // see the same list. Read it through window.PatidarWishlist.
+    const wishlist = new Set();
 
     function formatPrice(value) {
       return `₹${value.toLocaleString("en-IN")}`;
@@ -958,40 +787,15 @@
         `</svg>`
       );
 
-    // Safety-net local placeholder (400x500 PNG). Used as the LAST remote step:
-    // requested inline-style fallback is `assets/images/placeholder-phone.png`,
-    // so it must resolve before the offline branded card / outline stages.
-    const PLACEHOLDER_PHONE = "assets/images/placeholder-phone.png";
-
     // Image resolution order per card:
     //   1. product.image (local path or remote URL passed to addProduct)
-    //   2. product.imageFallback (secondary remote URL, e.g. GSMArena bigpic)
-    //   3. assets/images/placeholder-phone.png (safety-net file)
-    //   4. images/mobiles/<slug>.png
-    //   5. auto-generated branded card (offline, never a 404 frame)
-    //   6. transparent phone outline
+    //   2. images/mobiles/<slug>.png
+    //   3. auto-generated branded card (offline, never a 404 frame)
+    //   4. transparent phone outline
     function imageFallback(image) {
-      const stage = image.dataset.fallbackStage || "0";
-      if (stage === "4") return; // terminal: outline already shown, avoid loops
-      if (stage === "0") {
+      image.onerror = null;
+      if (image.dataset.fallbackStage !== "1") {
         image.dataset.fallbackStage = "1";
-        // Stage 1: try the secondary remote URL (e.g. GSMArena bigpic mirror).
-        if (image.dataset.fallbackSrc && image.src !== image.dataset.fallbackSrc) {
-          image.src = image.dataset.fallbackSrc;
-          return;
-        }
-      }
-      if ((image.dataset.fallbackStage || "0") === "1") {
-        image.dataset.fallbackStage = "2";
-        // Stage 2: safety-net local placeholder file (equivalent of inline
-        // onerror="this.src='assets/images/placeholder-phone.png'").
-        if (image.src !== PLACEHOLDER_PHONE) {
-          image.src = PLACEHOLDER_PHONE;
-          return;
-        }
-      }
-      if ((image.dataset.fallbackStage || "0") === "2") {
-        image.dataset.fallbackStage = "3";
         image.src = buildProductCard({
           brand: image.dataset.brand || "",
           model: image.dataset.model || "",
@@ -999,15 +803,16 @@
         });
         return;
       }
-      image.dataset.fallbackStage = "4";
+      image.dataset.fallbackStage = "2";
       image.src = OUTLINE_FALLBACK;
       image.classList.add("is-placeholder");
       image.alt = `${image.dataset.title || "Product"} — image not available`;
     }
 
-    // Expose the staged resolver for the card's no-JS fallback path to delegate to,
-    // so there is exactly ONE implementation of the fallback chain.
-    window.__mobilesImageFallback = imageFallback;
+    // Kept as an alias for the older name so existing markup keeps working.
+    function phoneFallback(image) {
+      imageFallback(image);
+    }
 
     // image "error" does not bubble, so capture it to keep cards clean without
     // fragile inline onerror strings (product names contain quotes/brackets).
@@ -1020,10 +825,12 @@
       true
     );
 
-    // Wishlist hearts are owned by the shared store in js/wishlist.js: it binds
-    // ONE document-level click handler for [data-wishlist-id] that toggles
-    // localStorage and repaints every heart + badge. Nothing page-local here,
-    // which also means a heart never gets toggled twice per click.
+    function toggleWishlist(id, button) {
+      if (wishlist.has(id)) wishlist.delete(id);
+      else wishlist.add(id);
+      button.classList.toggle("active", wishlist.has(id));
+      button.innerHTML = wishlist.has(id) ? "<i class=\"fa-solid fa-heart\"></i>" : "<i class=\"fa-regular fa-heart\"></i>";
+    }
 
     // --- Render Products ---
     function renderProducts() {
@@ -1037,7 +844,6 @@
       }
 
       noResults.style.display = "none";
-      if (window.__bindProductGrid) window.__bindProductGrid();
       grid.innerHTML = filteredProducts.map((product, index) => {
         const productId = `${product.slug}-${product.specs.replace(/[^a-z0-9]/gi, "")}-${product.price}`;
         const title = `${product.brand} ${product.model}`;
@@ -1049,19 +855,12 @@
         );
         return `
         <div class="product-card">
-          <div class="card-actions-header">
-            <label class="compare-label"><input type="checkbox" class="compare-checkbox" data-index="${index}" data-compare-index="${index}"> Compare</label>
-            <button class="wishlist-btn" type="button" data-wishlist-id="${productId}" aria-label="Add to wishlist"><i class="fa-regular fa-heart"></i></button>
-          </div>
           <div class="product-image-wrapper">
-            <!-- onerror is the no-JS / no-delegation safety net only. When this script has
-                 run, the single delegated capture-phase listener below already owns the
-                 chain (imageFallback URL -> placeholder-phone.png -> slug .png -> branded
-                 card -> outline). Both firing for the SAME error event would burn two
-                 stages at once and strand Nothing Phone (3a) Lite on the placeholder even
-                 though its GSMArena URL is reachable - hence the fallbackStage guard
-                 inside imageFallback(), which makes a repeat call a no-op. -->
-            <img src="${product.image || "images/mobiles/" + product.slug + ".png"}"${product.imageFallback ? ` data-fallback-src="${product.imageFallback}"` : ""} data-fallback-phone="1" onerror="if(this.dataset.fallbackStage){/*delegated listener already advanced the chain*/}else if(window.__mobilesImageFallback){window.__mobilesImageFallback(this);}else{this.onerror=null;this.src='assets/images/placeholder-phone.png';}" alt="${title}" class="product-image" data-title="${title}" data-brand="${product.brand}" data-model="${product.model}" data-specs="${product.specs}" width="400" height="500" loading="lazy" decoding="async">
+            <div class="product-top">
+              <label class="compare-label"><input type="checkbox" class="compare-checkbox" data-index="${index}" onchange="toggleProductCompare(${index}, this)"> Compare</label>
+              <button class="wishlist-btn" type="button" onclick="toggleWishlist('${productId}', this)" aria-label="Add to wishlist"><i class="fa-regular fa-heart"></i></button>
+            </div>
+            <img src="${product.image || "images/mobiles/" + product.slug + ".png"}" onerror="phoneFallback(this)" alt="${title}" class="product-image" data-title="${title}" data-brand="${product.brand}" data-model="${product.model}" data-specs="${product.specs}" width="400" height="500" loading="lazy" decoding="async">
           </div>
           <div class="product-details">
             <span class="stock-badge"><i class="fa-solid fa-circle-check"></i> In Stock at Store</span>
@@ -1078,10 +877,6 @@
         </div>
       `;
       }).join("");
-
-      // A freshly rendered grid always starts unliked, so re-apply the saved
-      // wishlist state to the new buttons (badges are refreshed too).
-      if (window.PatidarWishlist) window.PatidarWishlist.render();
     }
 
     // --- Handle Search ---
@@ -1175,128 +970,13 @@
       ).join('\n')}`);
     }
 
-    // Back navigation lives in js/nav.js (window.goBack) so all three pages
-    // behave identically.
-
-    // --- Event delegation: ONE listener set on the grid wrapper (no per-card handlers) ---
-    (function initDelegation() {
-      const grid = () => document.getElementById("productsGrid");
-      const usePerf = () => window.PatidarPerf || null;
-
-      function bindAll() {
-        const g = grid();
-        if (!g || g.dataset.delegated === "1") return;
-        g.dataset.delegated = "1";
-        const Perf = usePerf();
-        const handlers = {
-          // Hearts are deliberately absent: js/wishlist.js already delegates
-          // every [data-wishlist-id] click at document level. Handling them here
-          // as well would toggle twice, leaving the heart unchanged.
-          compare: (box) => {
-            const idx = parseInt(box.getAttribute("data-compare-index") || box.getAttribute("data-index") || "-1", 10);
-            if (!isNaN(idx) && idx >= 0) toggleProductCompare(idx, box);
-          }
-        };
-        if (Perf && Perf.delegateGrid) Perf.delegateGrid(g, handlers);
-        else {
-          // No perf.js: compare still needs a home here. Hearts are covered by
-          // js/wishlist.js, so no click listener is registered for them.
-          g.addEventListener("change", (e) => {
-            const box = e.target;
-            if (box && box.matches && box.matches(".compare-checkbox")) handlers.compare(box);
-          });
-        }
-      }
-
-      // NOTE: the single delegated "error" listener above (near phoneFallback) is the
-      // ONE owner of the image chain. A second identical capture-phase listener used to
-      // sit here, which fired imageFallback twice per error and burned two stages at once,
-      // overwriting the working GSMArena URL with the placeholder.
-
-      // Debounced search + rAF render: smooth typing on low-end phones.
-      // NOTE: the markup keeps NO inline oninput hook; this listener owns search.
-      const searchBox = document.getElementById("searchInput");
-      if (searchBox) {
-        const Perf = usePerf();
-        const runSearch = () => {
-          const paint = () => handleSearch();
-          if (Perf && Perf.rafRender) Perf.rafRender(paint);
-          else if (window.requestAnimationFrame) window.requestAnimationFrame(paint);
-          else paint();
-        };
-        const debounced = Perf && Perf.debounce ? Perf.debounce(runSearch, 160) : runSearch;
-        searchBox.addEventListener("input", debounced, { passive: true });
-      }
-
-      // Warm the next navigation: prefetch category pages on hover/touch.
-      try {
-        const Perf = usePerf();
-        if (Perf && Perf.autoPrefetch) Perf.autoPrefetch('a[href$=".html"]');
-      } catch (err) { /* ignore */ }
-
-      window.__bindProductGrid = bindAll;
-      bindAll();
-    })();
-
-    // --- Session-persisted UI state: revisit/back restores list instantly ---
-    (function persistUi() {
-      const KEY = "mobiles-ui-v1";
-      const readCache = () => {
-        try {
-          if (window.PatidarPerf) return window.PatidarPerf.cacheGet(KEY);
-          return JSON.parse(sessionStorage.getItem("patidar-perf:v1:" + KEY) || "null");
-        } catch (err) { return null; }
-      };
-      const writeCache = (v) => {
-        try {
-          if (window.PatidarPerf) window.PatidarPerf.cacheSet(KEY, v);
-          else sessionStorage.setItem("patidar-perf:v1:" + KEY, JSON.stringify(v));
-        } catch (err) { /* ignore */ }
-      };
-      try {
-        const saved = readCache();
-        if (saved && typeof saved.query === "string" && saved.query) {
-          const box = document.getElementById("searchInput");
-          if (box) box.value = saved.query;
-        }
-        if (saved && (saved.sort === "low-to-high" || saved.sort === "high-to-low")) {
-          const m = document.getElementById("mobileSort");
-          const d = document.getElementById("sidebarSort");
-          if (m) m.value = saved.sort;
-          if (d) d.value = saved.sort;
-          currentSort = saved.sort;
-        }
-        if (saved && Array.isArray(saved.priceRange)) {
-          filteredProducts = allProducts.filter(
-            (p) => p.price >= saved.priceRange[0] && p.price <= saved.priceRange[1]
-          );
-          applySort();
-        } else if (saved && typeof saved.query === "string" && saved.query) {
-          handleSearch();
-        }
-      } catch (err) { /* corrupt cache: fall through to default render */ }
-      window.addEventListener("beforeunload", () => {
-        try {
-          writeCache({
-            query: document.getElementById("searchInput").value || "",
-            sort: currentSort,
-            priceRange: null
-          });
-        } catch (err) { /* ignore */ }
-      });
-    })();
+    // --- Go Back ---
+    function goBack() {
+      window.history.back();
+    }
 
     // --- Initialize ---
     renderProducts();
   </script>
-<!-- Single footer ad, last element in the document. This page has no footer
-       or store section, so it sits directly after the product grid. -->
-  <div class="footer-ad-wrapper" data-footer-ad>
-    <span class="ad-sponsor-label">SPONSORED</span>
-    <div class="ad-desktop-only" data-ad-slot="desktop"></div>
-    <div class="ad-mobile-only" data-ad-slot="mobile"></div>
-  </div>
-
-  <script src="js/ads.js"></script>
 </body>
 </html>

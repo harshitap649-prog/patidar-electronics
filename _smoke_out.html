@@ -1,0 +1,148 @@
+﻿<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>smoke</title></head>
+<body>
+<pre id="out">perf loaded: true
+restored query: 'samsung'
+restored sort: low-to-high
+cards after restore(search=samsung): 0
+resultCount: Showing 0 of 5 in Smart TVs
+cards after clear: 5 box=''
+iframe rAF fired: 0
+rafRender src: function rafRender(fn) { rafFn = fn; if (rafQueued) return; rafQueued = true; var fired = false; var run = function () { // rAF + watchdog may both fire; only the first drains the queue. if (fired) return; fired = true; rafQueued = false; var job = rafFn; rafFn = null; if (job) job(); }; if (typeof 
+dbg capture/run/paint: 0/0/0 cards: 0 resultCount: Showing 0 of 5 in Smart TVs
+after direct handleSearch cards: 0 resultCount: Showing 0 of 5 in Smart TVs
+after empty input cards: 5
+chip active: true cards: 1 minPrice synced: 0
+sorted cards: 1 first price: Γé╣15,250
+wishlist active class: true cls=wishlist-btn active
+compare btn disabled after check: false
+after reset cards: 5 sort=popularity
+DONE</pre>
+<iframe id="f" src="category.html?type=tvs" style="width:1200px;height:800px"></iframe>
+<script>
+(function () {
+  var out = [];
+  var el = document.getElementById("out");
+  var log = function (m) { out.push(m); el.textContent = out.join("\n"); };
+  var f = document.getElementById("f");
+  var sleep = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
+
+  // Pre-seed session cache so restore path is exercised.
+  try {
+    sessionStorage.setItem("patidar-perf:v1:category-ui-v1",
+      JSON.stringify({ query: "samsung", sort: "low-to-high", priceRange: null, type: "tvs" }));
+  } catch (e) { log("seed fail: " + e.message); }
+
+  f.addEventListener("load", function () {
+    var run = async function () {
+      try {
+        var d = f.contentDocument, w = f.contentWindow;
+        await sleep(400);
+
+        log("perf loaded: " + (!!w.PatidarPerf));
+        log("restored query: '" + d.getElementById("searchInput").value + "'");
+        log("restored sort: " + d.getElementById("sidebarSort").value);
+        var n = d.querySelectorAll(".product-card").length;
+        log("cards after restore(search=samsung): " + n);
+        var cnt = d.getElementById("resultCount").textContent.replace(/\s+/g, " ").trim();
+        log("resultCount: " + cnt);
+
+        // Clear -> full list back
+        d.querySelector('[data-action="clear-search"]').click();
+        await sleep(150);
+        n = d.querySelectorAll(".product-card").length;
+        log("cards after clear: " + n + " box='" + d.getElementById("searchInput").value + "'");
+
+        // Typing: debounced single render
+        var box = d.getElementById("searchInput");
+        w.__inputFired = 0;
+        w.__debounceProbe = 0;
+        d.addEventListener("input", function () { w.__inputFired++; }, { capture: true });
+        w.addEventListener("error", function (e) { log("PAGE ERROR: " + e.message); });
+        // Trace whether PatidarPerf.debounce-wrapped fn ever fires
+        var origDebounce = w.PatidarPerf.debounce;
+        w.PatidarPerf.debounce = function (fn, wait) {
+          var wrapped = origDebounce(function () { w.__debounceProbe++; fn.apply(this, arguments); }, wait);
+          return wrapped;
+        };
+        // Probe: does rAF fire inside the iframe under this headless mode?
+        w.__rafFired = 0;
+        w.requestAnimationFrame(function () { w.__rafFired = 1; });
+        await sleep(600);
+        log("iframe rAF fired: " + w.__rafFired);
+        log("rafRender src: " + w.PatidarPerf.rafRender.toString().replace(/\s+/g, " ").slice(0, 300));
+        box.value = "boat";
+        box.dispatchEvent(new w.Event("input", { bubbles: true }));
+        await sleep(500);
+        log("dbg capture/run/paint: " + (w.__dbgCapture || 0) + "/" +
+            (w.__dbgRun || 0) + "/" + (w.__dbgPaint || 0) +
+            " cards: " + d.querySelectorAll(".product-card").length +
+            " resultCount: " + d.getElementById("resultCount").textContent.replace(/\s+/g, " ").trim());
+        // Direct call path check
+        w.handleSearch();
+        await sleep(100);
+        log("after direct handleSearch cards: " + d.querySelectorAll(".product-card").length +
+            " resultCount: " + d.getElementById("resultCount").textContent.replace(/\s+/g, " ").trim());
+        box.value = "";
+        box.dispatchEvent(new w.Event("input", { bubbles: true }));
+        await sleep(500);
+        log("after empty input cards: " + d.querySelectorAll(".product-card").length);
+
+        // Clear again, then price chip
+        d.querySelector('[data-action="clear-search"]').click();
+        await sleep(150);
+        var chip = d.querySelector('.filter-chip[data-price="under20k"]');
+        chip.click();
+        await sleep(150);
+        log("chip active: " + chip.classList.contains("active") +
+            " cards: " + d.querySelectorAll(".product-card").length +
+            " minPrice synced: " + d.getElementById("minPrice").value);
+
+        // Sidebar sort via inline onchange path
+        var sel = d.getElementById("sidebarSort");
+        sel.value = "high-to-low";
+        sel.dispatchEvent(new w.Event("change", { bubbles: true }));
+        await sleep(150);
+        var first = d.querySelector(".product-card .product-price");
+        log("sorted cards: " + d.querySelectorAll(".product-card").length +
+            " first price: " + (first ? first.textContent : "none"));
+
+        // Wishlist delegation on grid
+        var heart = d.querySelector("[data-wishlist-id]");
+        if (heart) {
+          heart.click();
+          await sleep(80);
+          log("wishlist active class: " + (heart.className.indexOf("active") !== -1 || heart.className.indexOf("wish") !== -1) +
+              " cls=" + heart.className);
+        } else { log("wishlist: NO BUTTON"); }
+
+        // Compare delegation
+        var cb = d.querySelector(".compare-checkbox");
+        if (cb) {
+          cb.checked = true;
+          cb.dispatchEvent(new w.Event("change", { bubbles: true }));
+          await sleep(80);
+          log("compare btn disabled after check: " + d.getElementById("compareBtn").disabled);
+        } else { log("compare: NO CHECKBOX"); }
+
+        // Reset filters
+        var reset = d.getElementById("resetFilters");
+        if (reset && reset.style.display !== "none") {
+          reset.click();
+          await sleep(150);
+          log("after reset cards: " + d.querySelectorAll(".product-card").length +
+              " sort=" + d.getElementById("sidebarSort").value);
+        } else { log("reset: hidden (not filtered?) display=" + reset.style.display); }
+
+        log("DONE");
+      } catch (e) {
+        log("ERROR: " + e.message + " | " + (e.stack || ""));
+      }
+    };
+    run();
+  });
+})();
+</script>
+
+
+</body></html>

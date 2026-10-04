@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Wishlist | Patidar Electronics</title>
+  <!-- Performance: preconnect third-party origins used below -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
+  <!-- Google Fonts & Font Awesome Icons (stylesheets stay in <head> to avoid CLS) -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Shared ad styling (currently just the footer banner rules). -->
+  <link rel="stylesheet" href="style.css" />
+  <!-- Shared perf helpers (page prefetch for instant back-navigation). -->
+  <script src="js/perf.js"></script>
+  <!-- Shared wishlist store: owns localStorage, the header badge and EVERY
+       heart click on this page. This file only re-renders when it fires. -->
+  <script src="js/wishlist.js"></script>
+  <!-- Shared Back handler (referrer-aware, falls back to index.html). Defines
+       window.goBack, which the header button below calls. -->
+  <script src="js/nav.js"></script>
+
+  <style>
+    :root {
+      --primary-red: #E52321;
+      --dark-red: #B81412;
+      --text-dark: #111827;
+      --text-muted: #6B7280;
+      --border-color: #E5E7EB;
+      --card-white: #FFFFFF;
+      --bg-light: #F9FAFB;
+      --success-green: #25d366;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      background: var(--bg-light); color: var(--text-dark);
+      line-height: 1.5; min-height: 100vh;
+    }
+
+    /* --- Top Sticky Header (mirrors mobiles.html / category.html) --- */
+    .header {
+      background: #FFFFFF;
+      border-bottom: 1px solid var(--border-color);
+      padding: 12px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 999;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .header-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .header-back {
+      background: none; border: none; font-size: 1.3rem; color: var(--text-dark);
+      cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600;
+    }
+    .header-back:hover { color: var(--primary-red); }
+    .header-title { flex: 1; text-align: center; font-size: 1.1rem; font-weight: 700; }
+
+    /* Badge is painted by js/wishlist.js: [data-wishlist-count] is the number,
+       [data-wishlist-badge] is the wrapper hidden at zero. */
+    .wishlist-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 18px; height: 18px; padding: 0 5px; border-radius: 50px;
+      background: var(--primary-red); color: #FFFFFF; font-size: 0.68rem;
+      font-weight: 800; line-height: 1;
+    }
+
+    /* --- Main --- */
+    .main-container { max-width: 1400px; margin: 0 auto; padding: 20px 16px; }
+
+    .results-meta {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      margin-bottom: 12px; font-size: 0.85rem; color: var(--text-muted); flex-wrap: wrap;
+    }
+    .results-meta strong { color: var(--text-dark); }
+
+    .clear-all {
+      background: #FFFFFF; border: 1px solid var(--border-color); color: var(--text-dark);
+      padding: 8px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 700;
+      cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .clear-all:hover { border-color: var(--primary-red); color: var(--primary-red); }
+
+    /* --- Product Grid (breakpoints mirror mobiles.html) --- */
+    .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+    @media (min-width: 600px) { .products-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); } }
+    @media (min-width: 900px) { .products-grid { grid-template-columns: repeat(3, 1fr); gap: 16px; } }
+    @media (min-width: 1200px) { .products-grid { grid-template-columns: repeat(4, 1fr); } }
+
+    /* --- Product Card ---
+       Ported from mobiles.html / category.html so a saved item looks exactly
+       like the card it was liked from. Change all three together. */
+    /* This page's body sets line-height: 1.5, which card text would otherwise
+       inherit and inflate by ~3px per element - the same drift already fixed
+       on category.html. Reset on the card to match the other two. */
+    .product-card {
+      line-height: normal;
+      content-visibility: auto;
+      contain-intrinsic-size: auto 520px;
+      background: var(--card-white);
+      border: 1px solid #EAECF0;
+      border-radius: 10px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      height: 100%;
+    }
+    .product-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); transform: translateY(-2px); }
+
+    .product-image-wrapper {
+      position: relative; background: #F9FAFB; height: 220px; margin-top: 8px;
+      display: flex; align-items: center; justify-content: center; overflow: hidden;
+    }
+    .product-image {
+      max-width: 100%; max-height: 200px; object-fit: contain; object-position: center;
+      width: 100%; height: 200px; padding: 6px 10px; transition: opacity 0.25s ease;
+    }
+    .product-image.is-placeholder { opacity: 0.85; }
+
+    /* Card action header holds only the remove (heart) button here - there is no
+       Compare option on this page. Same normal-flow header as mobiles.html and
+       category.html so all three render identical cards. */
+    .card-actions-header {
+      display: flex; justify-content: flex-end; align-items: center;
+      width: 100%; padding: 8px 12px; box-sizing: border-box;
+      flex: 0 0 auto; background: var(--card-white);
+    }
+    .wishlist-btn {
+      width: 30px; height: 30px; border: 1px solid var(--border-color); border-radius: 50%;
+      background: #FFFFFF; color: #4B5563; cursor: pointer;
+      display: grid; place-items: center; font-size: 0.8rem;
+      flex: 0 0 auto;
+    }
+    .wishlist-btn.active,
+    .wishlist-btn:hover { color: var(--primary-red); border-color: var(--primary-red); }
+
+    .product-details {
+      padding: 12px; flex: 1; display: flex; flex-direction: column;
+      background: var(--card-white);
+    }
+    .product-brand {
+      font-size: 0.85rem; font-weight: 600; color: #888; margin-bottom: 4px; line-height: 1.3;
+    }
+    .product-name {
+      font-weight: 700; font-size: 0.9rem; color: var(--text-dark); margin-bottom: 6px;
+      line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2;
+      -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .product-spec {
+      font-size: 0.75rem; color: var(--text-muted); background: #F3F4F6;
+      padding: 3px 6px; border-radius: 3px; display: inline-block;
+      margin-bottom: 8px; font-weight: 600;
+    }
+    .product-price { font-size: 1.1rem; font-weight: 800; color: #111827; margin-bottom: 10px; }
+
+    .price-meta {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;
+    }
+    .mrp { color: #9CA3AF; font-size: 0.75rem; }
+    .save-tag { color: #16A34A; font-size: 0.7rem; font-weight: 700; }
+
+    .stock-badge {
+      display: inline-flex; align-items: center; gap: 4px; align-self: flex-start;
+      background: #ECFDF5; border: 1px solid #A7F3D0; color: #16A34A;
+      font-size: 0.65rem; font-weight: 800; letter-spacing: 0.02em;
+      padding: 3px 8px; border-radius: 50px; margin-bottom: 8px; white-space: nowrap;
+    }
+    .emi-label {
+      display: flex; align-items: center; gap: 5px;
+      background: #FFF7ED; border: 1px dashed #FDBA74; color: #C2410C;
+      font-size: 0.7rem; font-weight: 700; padding: 4px 8px;
+      border-radius: 6px; margin-bottom: 10px;
+    }
+    .emi-label i { font-size: 0.72rem; }
+
+    .btn-whatsapp {
+      background: var(--success-green); color: white; border: none;
+      padding: 8px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 700;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      gap: 4px; text-decoration: none; margin-top: auto;
+    }
+    .btn-whatsapp:hover { background: #1da851; }
+
+    /* --- Empty state --- */
+    .empty-state { text-align: center; padding: 64px 20px; color: var(--text-muted); }
+    /* Scoped to .empty-icon, not a bare "i": a blanket .empty-state i also hit the
+       icon inside .btn-browse, blowing it up to 3rem and breaking the button. */
+    .empty-state .empty-icon { font-size: 3rem; color: var(--border-color); margin-bottom: 16px; display: block; }
+    .empty-state h2 { font-size: 1.1rem; color: var(--text-dark); margin-bottom: 8px; }
+    .empty-state p { font-size: 0.88rem; margin-bottom: 20px; }
+    .empty-state .btn-browse {
+      display: inline-flex; align-items: center; gap: 8px; background: var(--primary-red);
+      color: #fff; padding: 10px 20px; border-radius: 8px; font-weight: 700;
+      font-size: 0.85rem; text-decoration: none;
+    }
+    .empty-state .btn-browse:hover { background: var(--dark-red); }
+    /* Button icon inherits the button's own type scale instead of the hero size. */
+    .empty-state .btn-browse i { font-size: inherit; color: inherit; margin: 0; display: inline-block; }
+
+    /* --- Responsive (mirrors mobiles.html / category.html tap targets) --- */
+    @media (max-width: 767px) {
+      .products-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      .product-card { min-width: 0; }
+    }
+    @media (max-width: 500px) {
+      .product-image-wrapper { height: 140px; }
+      .card-actions-header { padding: 6px 8px; }
+      .wishlist-btn { width: 28px; height: 28px; font-size: 0.75rem; }
+      .product-details { padding: 10px; }
+      .product-name { font-size: 0.8rem; }
+      .product-price { font-size: 0.95rem; }
+      .btn-whatsapp { font-size: 0.75rem; padding: 6px 8px; }
+      .header-back { min-height: 48px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header -->
+  <div class="header">
+    <div class="header-top">
+      <button class="header-back" onclick="goBack()">
+        <i class="fa-solid fa-chevron-left"></i> Back
+      </button>
+      <div class="header-title">My Wishlist</div>
+      <span class="wishlist-badge" data-wishlist-badge><span data-wishlist-count>0</span></span>
+    </div>
+  </div>
+
+  <div class="main-container">
+    <div class="results-meta">
+      <span id="resultCount"></span>
+      <button class="clear-all" id="clearAll" type="button" style="display:none;">
+        <i class="fa-solid fa-trash-can"></i> Clear all
+      </button>
+    </div>
+
+    <div class="products-grid" id="productsGrid"></div>
+
+    <!-- Static markup (not built by JS): render() only toggles this node's display.
+         The CTA points at the home page's category grid rather than mobiles.html,
+         because the wishlist spans every catalogue, not just phones. The anchor
+         id on index.html is "category-section", not "categories". -->
+    <div class="empty-state" id="emptyState" style="display: none;">
+      <i class="fa-regular fa-heart empty-icon"></i>
+      <h2>Your wishlist is empty</h2>
+      <p>Tap the heart on any product across our categories to save it here for later.</p>
+      <a href="index.html#category-section" class="btn-browse"><i class="fa-solid fa-layer-group"></i> Browse Categories</a>
+    </div>
+  </div>
+
+  <!-- Both catalogues ship as plain script files, not fetch(), so this page
+       also works offline from file://. mobiles-data.js is generated from the
+       addProduct(...) block in mobiles.html by build-mobiles-data.js. -->
+  <script src="js/catalog-data.js"></script>
+  <script src="js/mobiles-data.js"></script>
+  <script>
+    (function () {
+      "use strict";
+
+      var WL       = window.PatidarWishlist;
+      var Showroom = window.ShowroomCatalog;
+      var Mobiles  = window.MobilesCatalog;
+
+      var grid        = document.getElementById("productsGrid");
+      var emptyState  = document.getElementById("emptyState");
+      var resultCount = document.getElementById("resultCount");
+      var clearAll    = document.getElementById("clearAll");
+
+      /* Showroom ids are the catalog's own `id`; build the lookup once. */
+      var showroomById = {};
+      if (Showroom) {
+        var all = Showroom.allProducts();
+        for (var i = 0; i < all.length; i++) showroomById[all[i].id] = all[i];
+      }
+
+      function esc(value) {
+        return String(value == null ? "" : value).replace(/[&<>"']/g, function (ch) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch];
+        });
+      }
+
+      // Back navigation lives in js/nav.js (window.goBack), shared with
+      // mobiles.html and category.html so the three cannot drift apart.
+
+      /* Same price helpers as mobiles.html: MRP is price * 1.1 rounded up to the
+         next 100, and the saving is that gap. */
+      function mrpOf(price) { return Math.ceil(price * 1.1 / 100) * 100; }
+      function money(price) {
+        if (Showroom) return Showroom.formatPrice(price);
+        if (Mobiles) return Mobiles.formatPrice(price);
+        return "₹" + Number(price).toLocaleString("en-IN");
+      }
+
+      /**
+       * Turn one stored id into a card model, or null when the item is no
+       * longer in stock. Two namespaces share the one storage array:
+       *   showroom -> catalog-data.js `id`      (e.g. "lg-tv-ua65u8300hulxl")
+       *   mobiles  -> "<slug>-<specs>-<price>"  (e.g. "...-8128GB-27999")
+       * Showroom is checked first because its ids are authored, not derived.
+       */
+      function resolve(id) {
+        if (Object.prototype.hasOwnProperty.call(showroomById, id)) {
+          var item = showroomById[id];
+          return {
+            id: id,
+            brand: item.brand,
+            title: Showroom.fullName(item),
+            spec: item.model,
+            price: item.price,
+            emi: item.emi || Math.round(item.price / 12),
+            badge: item.badge || "In Stock at Showroom",
+            /* Local photo -> vendor photo -> category placeholder -> branded
+               card. The order lives in ShowroomCatalog.imageSources() so this
+               page and category.html can never drift apart. */
+            sources: Showroom.imageSources(item)
+          };
+        }
+        if (!Mobiles) return null;
+        var product = Mobiles.byId(id);
+        if (!product) return null;
+        return {
+          id: id,
+          brand: product.brand,
+          title: Mobiles.fullName(product),
+          spec: Mobiles.specLabel(product.specs) + (product.colors ? " | " + product.colors : ""),
+          price: product.price,
+          emi: Math.round(product.price / 12),
+          badge: "In Stock at Store",
+          /* Local photo -> vendor photo -> shared placeholder. */
+          sources: Mobiles.imageSources(product).filter(Boolean)
+        };
+      }
+
+      /* Both catalogues expose whatsappLink(); route on which one owns the id. */
+      function whatsappLink(model) {
+        if (Object.prototype.hasOwnProperty.call(showroomById, model.id)) {
+          return Showroom.whatsappLink(showroomById[model.id]);
+        }
+        return Mobiles.whatsappLink(Mobiles.byId(model.id));
+      }
+
+      function cardHtml(model) {
+        /* Photos may be missing, so the whole candidate list rides along in
+           data-image-sources and the delegated error handler walks it. */
+        var sources = esc(JSON.stringify(model.sources));
+        var first = model.sources[0] || "";
+        var mrp = mrpOf(model.price);
+
+        return (
+          '<article class="product-card" data-product-id="' + esc(model.id) + '">' +
+            '<div class="card-actions-header">' +
+              /* Starts filled: every card here is liked by definition. */
+              '<button class="wishlist-btn active" type="button" data-wishlist-id="' + esc(model.id) + '"' +
+                ' data-wishlist-btn="1" aria-label="Remove ' + esc(model.title) + ' from wishlist">' +
+                '<i class="fa-solid fa-heart"></i>' +
+              "</button>" +
+            "</div>" +
+            '<div class="product-image-wrapper">' +
+              '<img class="product-image" alt="' + esc(model.title) + '" loading="lazy" decoding="async"' +
+                ' src="' + esc(first) + '" data-image-sources="' + sources + '" data-image-index="0">' +
+            "</div>" +
+            '<div class="product-details">' +
+              '<span class="stock-badge"><i class="fa-solid fa-circle-check"></i> ' + esc(model.badge) + "</span>" +
+              '<span class="product-brand">' + esc(model.brand) + "</span>" +
+              '<h3 class="product-name">' + esc(model.title) + "</h3>" +
+              '<span class="product-spec">' + esc(model.spec) + "</span>" +
+              '<div class="product-price">' + esc(money(model.price)) + "</div>" +
+              '<div class="price-meta">' +
+                '<span class="mrp"><s>MRP ' + esc(money(mrp)) + "</s></span>" +
+                '<span class="save-tag">Save ' + esc(money(mrp - model.price)) + "</span>" +
+              "</div>" +
+              '<div class="emi-label"><i class="fa-solid fa-credit-card"></i> EMI from ' +
+                esc(money(model.emi)) + "/mo</div>" +
+              '<a class="btn-whatsapp" href="' + esc(whatsappLink(model)) + '" target="_blank" rel="noopener noreferrer">' +
+                '<i class="fa-brands fa-whatsapp"></i> Enquire on WhatsApp' +
+              "</a>" +
+            "</div>" +
+          "</article>"
+        );
+      }
+
+      /* An id that no longer resolves still gets a card, so the shopper can see
+         what dropped out of stock and remove it instead of wondering where it
+         went. */
+      function missingHtml(id) {
+        return (
+          '<article class="product-card" data-product-id="' + esc(id) + '">' +
+            '<div class="card-actions-header">' +
+              '<button class="wishlist-btn" type="button" data-wishlist-id="' + esc(id) + '"' +
+                ' data-wishlist-btn="1" aria-label="Remove unavailable item from wishlist">' +
+                '<i class="fa-solid fa-heart"></i>' +
+              "</button>" +
+            "</div>" +
+            '<div class="product-image-wrapper" style="padding:16px;">' +
+              '<i class="fa-solid fa-box-open" style="font-size:2.2rem;color:#9CA3AF;"></i>' +
+            "</div>" +
+            '<div class="product-details">' +
+              '<span class="product-brand">No longer available</span>' +
+              '<h3 class="product-name">' + esc(id) + "</h3>" +
+              '<span class="product-spec">This item is not in current stock</span>' +
+            "</div>" +
+          "</article>"
+        );
+      }
+
+      function render() {
+        var ids = WL ? WL.all() : [];
+        var html = [];
+        var missing = 0;
+
+        for (var i = 0; i < ids.length; i++) {
+          var model = resolve(ids[i]);
+          if (model) html.push(cardHtml(model));
+          else { missing++; html.push(missingHtml(ids[i])); }
+        }
+
+        grid.innerHTML = html.join("");
+
+        var hasItems = ids.length > 0;
+        emptyState.style.display = hasItems ? "none" : "block";
+        clearAll.style.display = hasItems ? "inline-flex" : "none";
+        resultCount.innerHTML = hasItems
+          ? "<strong>" + ids.length + "</strong> item" + (ids.length === 1 ? "" : "s") + " saved" +
+            (missing ? " (" + missing + " no longer in stock)" : "")
+          : "Nothing saved yet";
+      }
+
+      /* Image fallback chain (local -> vendor -> placeholder). Capture-phase
+         "error" so it also catches failures that never reach the document. */
+      document.addEventListener("error", function (event) {
+        var t = event.target;
+        if (!t || t.tagName !== "IMG" || !t.hasAttribute("data-image-sources")) return;
+        event.stopPropagation();
+        var sources;
+        try { sources = JSON.parse(t.getAttribute("data-image-sources")); } catch (err) { sources = []; }
+        var next = parseInt(t.getAttribute("data-image-index") || "0", 10) + 1;
+        if (sources[next]) {
+          t.setAttribute("data-image-index", String(next));
+          t.onerror = null;
+          t.src = sources[next];
+        } else {
+          t.removeAttribute("data-image-sources");
+          t.onerror = null;
+          t.classList.add("is-placeholder");
+        }
+      }, true);
+
+      /* Clear all empties the one storage array. No page-local copy of the ids
+         is kept here, so there is nothing to fall out of sync. */
+      if (clearAll) {
+        clearAll.addEventListener("click", function () {
+          if (!WL) return;
+          var ids = WL.all();
+          var n = ids.length;
+          if (!n) return;
+          if (!window.confirm("Remove all " + n + " saved item" + (n === 1 ? "" : "s") +
+              " from your wishlist?")) return;
+          for (var i = 0; i < ids.length; i++) WL.remove(ids[i]);
+          render();
+        });
+      }
+
+      /* js/wishlist.js owns every heart click and fires this event after each
+         mutation, so unliking here drops the card. Cross-tab "storage" updates
+         arrive through the same listener the store registers. */
+      if (WL) window.addEventListener(WL.EVENT, render);
+      /* Paint once up front. The store's own render() only touches badges and
+         hearts, so without this the grid stays blank until something changes. */
+      render();
+
+      /* Warm the likely next hop back to the catalogue. */
+      try {
+        if (window.PatidarPerf && window.PatidarPerf.autoPrefetch) {
+          window.PatidarPerf.autoPrefetch('a[href$=".html"]');
+        }
+      } catch (err) { /* ignore */ }
+    })();
+  </script>
+<!-- Single footer ad, last element in the document. This page has no footer
+       or store section, so it sits directly after the wishlist grid. -->
+  <div class="footer-ad-wrapper" data-footer-ad>
+    <span class="ad-sponsor-label">SPONSORED</span>
+    <div class="ad-desktop-only" data-ad-slot="desktop"></div>
+    <div class="ad-mobile-only" data-ad-slot="mobile"></div>
+  </div>
+
+  <script src="js/ads.js"></script>
+</body>
+</html>

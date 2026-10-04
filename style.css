@@ -1,0 +1,59 @@
+/* =============================================================================
+ * Patidar Electronics - ad unit styling (style.css)
+ * -----------------------------------------------------------------------------
+ * Currently the only rules in this file are for the single footer ad banner.
+ * Each page also carries its own <style> block; the ad styles live here
+ * instead so one edit covers index.html, mobiles.html, category.html and
+ * wishlist.html rather than four copies drifting apart.
+ *
+ * Layout contract: the wrapper reserves its own space and never participates
+ * in the surrounding content flow, so a slow or blocked ad request cannot push
+ * page content around or open a gap in the middle of the document.
+ * ========================================================================== */
+
+.footer-ad-wrapper {
+  /* Placeholder height reserves the slot before the creative arrives, so the
+     page does not reflow when the ad loads. */
+  min-height: 90px;
+  margin: 25px 0 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  /* Keep an oversized creative from widening the page. */
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.ad-sponsor-label {
+  display: block;
+  font-size: 10px;
+  color: #9ca3af;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+/* Both units are in the DOM; exactly one is ever shown *and* only one is ever
+   fetched (see js/ads.js). CSS controls the switch, JS controls the request. */
+.ad-desktop-only,
+.ad-mobile-only {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .ad-desktop-only { display: none !important; }
+  .ad-mobile-only  { display: block !important; }
+  /* 320x50 plus a little breathing room inside the wrapper. */
+  .footer-ad-wrapper { min-height: 50px; }
+}
+
+@media (min-width: 769px) {
+  .ad-desktop-only { display: block !important; }
+  .ad-mobile-only  { display: none !important; }
+}
+
+/* js/ads.js leaves this class on the slot while the creative is in flight, so a
+   blocked or slow ad network degrades to a clean label rather than a hole. */
+.footer-ad-wrapper.is-empty .ad-sponsor-label { margin-bottom: 0; }

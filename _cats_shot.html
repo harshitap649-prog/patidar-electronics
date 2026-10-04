@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>All Categories modal - mobile screenshot</title>
+<style>
+  html, body { margin: 0; background: #111; }
+  .row { display: flex; gap: 10px; padding: 10px; align-items: flex-start; }
+  iframe { border: 0; flex: 0 0 auto; background: #fff; }
+</style>
+</head>
+<body>
+<div class="row" id="row"></div>
+<script>
+var SIZES = [{ w: 360, h: 780 }, { w: 320, h: 700 }];
+SIZES.forEach(function (s) {
+  var f = document.createElement('iframe');
+  f.style.width = s.w + 'px';
+  f.style.height = s.h + 'px';
+  f.src = 'index.html';
+  f.addEventListener('load', function () {
+    try { f.contentWindow.openCategoriesModal(); } catch (e) {}
+  }, { once: true });
+  document.getElementById('row').appendChild(f);
+});
+</script>
+</body>
+</html>

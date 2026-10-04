@@ -1,0 +1,8 @@
+[8548:2628:0928/100509.664:ERROR:google_apis\gcm\engine\registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR
+[8548:2628:0928/100509.664:ERROR:google_apis\gcm\engine\registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR
+[8548:2628:0928/100509.697:ERROR:google_apis\gcm\engine\registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR
+[8548:2628:0928/100510.140:ERROR:google_apis\gcm\engine\mcs_client.cc:702]   Error code: 401  Error message: Authentication Failed: wrong_secret
+[8548:2628:0928/100510.140:ERROR:google_apis\gcm\engine\mcs_client.cc:704] Failed to log in to GCM, resetting connection.
+130048 bytes written to file C:\Users\Keshav\Desktop\shop\_mob_mobile.png
+[8548:15844:0928/100510.452:ERROR:chrome\browser\web_applications\os_integration\os_integration_manager.cc:270] Can't perform OS integration while the browser is shutting down.
+[8548:15844:0928/100510.482:ERROR:chrome\browser\web_applications\externally_managed_app_manager.cc:680] https://chat.google.com/download?usp=chrome_default from install source 1 failed to install with reason 21

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Festive hero banner - screenshot</title>
+<style>
+  html, body { margin: 0; background: #fff; }
+  .row { display: flex; gap: 14px; padding: 14px; align-items: flex-start; background: #f3f4f6; }
+  .cap { display: inline-block; background: #111; color: #0f0; font: 700 20px monospace; padding: 6px 14px; margin: 10px 0 0 14px; }
+  iframe { border: 0; flex: 0 0 auto; background: #fff; box-shadow: 0 4px 14px rgba(0,0,0,.18); }
+</style>
+</head>
+<body>
+<div class="row" id="row"></div>
+<script>
+var MODE = location.search.indexOf('mode=desktop') !== -1 ? 'desktop' : 'mobile';
+var SIZES = MODE === 'desktop'
+  ? [{ w: 1200, h: 900 }]
+  : [{ w: 360, h: 880 }, { w: 320, h: 820 }];
+SIZES.forEach(function (s) {
+  var cap = document.createElement('div');
+  cap.className = 'cap';
+  cap.textContent = MODE.toUpperCase() + ' @ ' + s.w + 'px';
+  document.body.appendChild(cap);
+  var f = document.createElement('iframe');
+  f.style.width = s.w + 'px';
+  f.style.height = s.h + 'px';
+  f.src = 'index.html';
+  f.addEventListener('load', function () {
+    setTimeout(function () {
+      try {
+        var doc = f.contentDocument;
+        var win = f.contentWindow;
+        doc.documentElement.style.scrollBehavior = 'auto'; // page uses smooth scrolling; force instant for capture
+        var el = doc.querySelector('.claim-offer-section');
+        var top = el.getBoundingClientRect().top + win.pageYOffset - 40;
+        win.scrollTo(0, top);
+        setTimeout(function () { win.scrollTo(0, top); }, 300); // re-anchor after late layout shifts
+      } catch (e) {}
+    }, 400);
+  }, { once: true });
+  document.getElementById('row').appendChild(f);
+});
+</script>
+</body>
+</html>

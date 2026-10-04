@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>All Categories modal - mobile grid harness</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #111; font: 12px monospace; color: #eee; }
+  .row { display: flex; align-items: flex-start; gap: 8px; padding: 6px; }
+  iframe { border: 1px solid #444; background: #fff; display: block; flex: 0 0 auto; }
+  pre { margin: 0; padding: 4px; white-space: pre-wrap; word-break: break-all; }
+</style>
+</head>
+<body>
+<!-- Each iframe is an exact CSS viewport, so media queries evaluate per-device width. -->
+<div class="row" id="row"></div>
+<pre id="CATS_HARNESS">CATS_HARNESS::{"phase":"start"}</pre>
+
+<script>
+var SIZES = [
+  { w: 320, h: 700 },
+  { w: 360, h: 780 },
+  { w: 390, h: 844 },
+  { w: 414, h: 896 },
+  { w: 504, h: 700 },
+  { w: 600, h: 800 },
+  { w: 768, h: 900 },
+  { w: 1000, h: 900 }
+];
+
+var out = document.getElementById('CATS_HARNESS');
+var results = [];
+var pending = SIZES.length;
+var failed = [];
+
+function rect(el) {
+  var r = el.getBoundingClientRect();
+  return { w: Math.round(r.width), h: Math.round(r.height), l: Math.round(r.left), r: Math.round(r.right) };
+}
+
+function measure(w, doc, label) {
+  var res = { label: label, innerWidth: w.innerWidth, innerHeight: w.innerHeight };
+  function overflowers() {
+    var bad = [];
+    [].slice.call(doc.body.querySelectorAll('*')).forEach(function (el) {
+      var r = el.getBoundingClientRect();
+      if (r.width === 0 || r.height === 0) return;
+      if (r.right > w.innerWidth + 1 || el.scrollWidth > el.clientWidth + 1) {
+        if (bad.length < 8) {
+          bad.push(el.tagName + (el.className && typeof el.className === 'string' ? '.' + el.className.split(' ').join('.') : '') +
+            ' right=' + Math.round(r.right) + ' sw=' + el.scrollWidth + '/' + el.clientWidth);
+        }
+      }
+    });
+    return bad;
+  }
+  try {
+    // 1) overflow present BEFORE the modal is opened (i.e. from the page behind it)
+    var de0 = doc.documentElement;
+    res.docOverflowBeforeModal = de0.scrollWidth - de0.clientWidth;
+    res.overflowersBeforeModal = overflowers();
+
+    if (typeof w.openCategoriesModal === 'function') w.openCategoriesModal();
+    else throw new Error('openCategoriesModal missing');
+
+    var grids = [].slice.call(doc.querySelectorAll('.categories-modal .modal-category-grid'));
+    if (!grids.length) throw new Error('no .modal-category-grid inside modal');
+    var grid = grids[0];
+    var cards = [].slice.call(doc.querySelectorAll('.categories-modal .modal-category-item'));
+    if (!cards.length) throw new Error('no .modal-category-item inside modal');
+
+    var cols = w.getComputedStyle(grid).gridTemplateColumns.split(/\s+/).filter(Boolean);
+    res.columns = cols.length;
+    res.colWidths = cols.map(function (c) { return Math.round(parseFloat(c)); });
+
+    var firstTop = Math.round(cards[0].getBoundingClientRect().top);
+    res.firstRowCards = cards.filter(function (c) {
+      return Math.round(c.getBoundingClientRect().top) === firstTop;
+    }).length;
+    res.totalCards = cards.length;
+    res.modalGrids = grids.length;
+
+    res.strayGridChildren = [];
+    grids.forEach(function (g, gi) {
+      [].slice.call(g.children).forEach(function (ch) {
+        if (!ch.classList.contains('modal-category-item')) res.strayGridChildren.push('g' + gi + ':' + ch.tagName);
+      });
+    });
+
+    var clipped = [];
+    var maxImgH = 0;
+    var maxCardRight = 0;
+    cards.forEach(function (c) {
+      var name = c.getAttribute('data-category') || '?';
+      maxCardRight = Math.max(maxCardRight, rect(c).r);
+      if (c.scrollWidth > c.clientWidth + 1) clipped.push(name + ' card-w ' + c.scrollWidth + '>' + c.clientWidth);
+      var lbl = c.querySelector('.modal-category-label');
+      if (lbl && lbl.scrollWidth > lbl.clientWidth + 1) clipped.push(name + ' label-w ' + lbl.scrollWidth + '>' + lbl.clientWidth);
+      var img = c.querySelector('img');
+      var tile = c.querySelector('.modal-category-icon');
+      if (img && tile) {
+        var ir = rect(img), tr = rect(tile);
+        maxImgH = Math.max(maxImgH, ir.h);
+        if (ir.r > tr.r + 1) clipped.push(name + ' img-x ' + ir.r + '>' + tr.r);
+        if (ir.h > tr.h + 1) clipped.push(name + ' img-h ' + ir.h + '>' + tr.h);
+      }
+    });
+
+    var tile0 = rect(cards[0].querySelector('.modal-category-icon'));
+    var img0 = rect(cards[0].querySelector('img'));
+    res.card0 = rect(cards[0]).w + 'x' + rect(cards[0]).h;
+    res.tile0 = tile0.w + 'x' + tile0.h;
+    res.img0 = img0.w + 'x' + img0.h;
+    res.maxImgH = Math.round(maxImgH);
+    res.maxCardRight = maxCardRight;
+    res.gridClient = grid.clientWidth;
+    res.gridScroll = grid.scrollWidth;
+    res.gridOverflow = grid.scrollWidth - grid.clientWidth;
+
+    var de = doc.documentElement;
+    res.docScrollWidth = de.scrollWidth;
+    res.docClientWidth = de.clientWidth;
+    res.docOverflowX = de.scrollWidth - de.clientWidth;
+    res.bodyOverflowX = doc.body.scrollWidth - de.clientWidth;
+
+    var mb = doc.getElementById('modalBody');
+    var mc = doc.querySelector('.categories-modal .modal-content');
+    res.modalBodyOverflow = mb ? mb.scrollWidth - mb.clientWidth : 'n/a';
+    res.modalContentOverflow = mc ? mc.scrollWidth - mc.clientWidth : 'n/a';
+    res.searchWidth = (function () {
+      var s = doc.querySelector('.categories-modal .search-input-wrapper');
+      return s ? rect(s).w : 'n/a';
+    })();
+
+    // Bottom-nav clearance: scroll modal body fully down, then make sure the last
+    // card row is not permanently hidden behind the fixed mobile-app-nav overlay.
+    var nav = doc.querySelector('.mobile-app-nav');
+    var navTop = nav && nav.getBoundingClientRect().height > 0
+      ? nav.getBoundingClientRect().top : Infinity;
+    mc.scrollTop = mc.scrollHeight;
+    mc.scrollTop = mc.scrollHeight; // twice in case layout settled after first set
+    var lastCard = cards[cards.length - 1];
+    var lr = lastCard.getBoundingClientRect();
+    var mcr = mc.getBoundingClientRect();
+    var visBottom = Math.min(navTop, mcr.bottom, w.innerHeight);
+    var hiddenPx = Math.max(0, Math.round(lr.bottom - visBottom));
+    res.navH = nav ? Math.round(nav.getBoundingClientRect().height) : 0;
+    res.lastRow = {
+      card: lastCard.getAttribute('data-category') || '?',
+      cardBottom: Math.round(lr.bottom),
+      modalContentBottom: Math.round(mcr.bottom),
+      scrolledTo: Math.round(mc.scrollTop),
+      scrollMax: Math.round(mc.scrollHeight - mc.clientHeight),
+      navTop: isFinite(navTop) ? Math.round(navTop) : null,
+      hiddenPx: hiddenPx
+    };
+    if (hiddenPx > 0) {
+      clipped.push('lastRow ' + res.lastRow.card + ' hidden ' + hiddenPx + 'px by nav/container');
+    }
+    // restore scroll position for any later measurement
+    mc.scrollTop = 0;
+
+    res.clipped = clipped;
+    res.overflowersAfterModal = overflowers();
+  } catch (e) {
+    res.error = String((e && e.message) || e);
+  }
+  return res;
+}
+
+SIZES.forEach(function (s) {
+  var f = document.createElement('iframe');
+  f.setAttribute('width', s.w);
+  f.setAttribute('height', s.h);
+  f.style.width = s.w + 'px';
+  f.style.height = s.h + 'px';
+  f.src = 'index.html';
+  f.addEventListener('load', function () {
+    var doc = null;
+    try { doc = f.contentDocument; } catch (e) { doc = null; }
+    if (!doc || !doc.body) {
+      failed.push(s.w + ':cross-origin');
+      results.push({ label: s.w, error: 'cannot access iframe document' });
+    } else {
+      results.push(measure(f.contentWindow, doc, String(s.w)));
+    }
+    if (--pending === 0) {
+      out.textContent = 'CATS_HARNESS::' + JSON.stringify({ failed: failed, results: results });
+    }
+  }, { once: true });
+  document.getElementById('row').appendChild(f);
+});
+</script>
+</body>
+</html>
