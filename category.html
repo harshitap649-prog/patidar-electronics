@@ -41,20 +41,12 @@
     }
     a { color: inherit; text-decoration: none; }
 
-    /* --- Header --- */
-    .site-header {
-      position: sticky; top: 0; z-index: 100;
-      background: var(--card-white); border-bottom: 1px solid var(--border-color);
-      padding: 14px 5%; display: flex; align-items: center; gap: 16px;
-    }
-    .back-link {
-      display: inline-flex; align-items: center; gap: 8px;
-      font-weight: 600; font-size: 0.9rem; color: var(--text-muted);
-      min-height: 44px; padding: 0 12px; border-radius: 10px;
-      border: 1px solid var(--border-color); background: var(--bg-light);
-    }
-    .back-link:hover { color: var(--primary-red); border-color: var(--primary-red); }
-    .header-logo { height: 38px; object-fit: contain; }
+    /* --- Header ---
+       The old .site-header / .back-link / .header-logo block was removed here:
+       none of the three classes appear in any markup in this project (the live
+       header is .header > .header-top, below), so they were dead rules. The
+       real "< Back" control is .header-back, a <button>, whose typography is
+       shared via style.css. */
 
     /* --- Top Sticky Header (mirrors mobiles.html) --- */
     .header {
@@ -63,12 +55,7 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
     .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-    .header-back {
-      background: none; border: none; font-size: 1.3rem; color: var(--text-dark);
-      cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600;
-    }
-    .header-back:hover { color: var(--primary-red); }
-    .header-title { flex: 1; text-align: center; font-size: 1.1rem; font-weight: 700; color: var(--text-dark); }
+    /* .header-back / .header-title typography now live in style.css. */
     .compare-btn {
       background: var(--primary-red); color: white; border: none; padding: 6px 12px;
       border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: background 0.2s;

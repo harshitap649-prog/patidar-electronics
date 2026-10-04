@@ -38,7 +38,6 @@
       /* Multi-branch showroom theme (brand red + WhatsApp green) */
       --branch-red: #E52E2E;
       --branch-red-dark: #C41F1F;
-      --branch-green: #25D366;
       --branch-ink: #111111;
     }
 
@@ -260,7 +259,12 @@
     .offer-pill { display: inline-flex; align-items: center; gap: 7px; padding: 7px 14px; border: 1px solid #FBB4B4; border-radius: 50px; color: #C81E1E; background: #FEE2E2; font-size: 0.7rem; font-weight: 800; letter-spacing: 1.2px; }
     .offer-pill i { color: #E52321; font-size: 0.66rem; }
 
-    /* --- Store Trust Strip --- */
+    /* --- Store Trust Strip ---
+       Kept ONLY for the SECOND strip further down the page (index.html ~1433:
+       0% EMI / 100% Genuine Warranty / Instant Pick-up / Free Gift Offers).
+       The four cards under the hero slider were redesigned into the
+       .features-* section in style.css; these rules still style the lower strip,
+       so do not delete them without restyling that block too. */
     .store-trust-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 0 0 40px; }
     .trust-item {
       display: flex;
@@ -404,31 +408,38 @@
       border-radius: 20px;
       box-shadow: 0 6px 18px rgba(17, 24, 39, 0.05);
       cursor: pointer;
+      /* One accent for both branches. This used to be set per data-branch, with
+         the Mobile Gallery card on green while the Mall card was red. Declaring
+         it once here is what stops the two themes drifting apart again. */
+      --branch-accent: #E52E2E;
       transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease;
     }
     .branch-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; border-radius: 20px 20px 0 0; background: linear-gradient(90deg, var(--branch-accent) 0%, rgba(255, 255, 255, 0) 118%); opacity: 0; transition: opacity 0.28s ease; }
-    .branch-card[data-branch="mall"] { --branch-accent: #E52E2E; }
-    .branch-card[data-branch="mobile"] { --branch-accent: #25D366; }
     .branch-card:hover { transform: translateY(-4px); box-shadow: 0 16px 32px rgba(17, 24, 39, 0.10); }
     .branch-card.is-active { border-color: var(--branch-accent); box-shadow: 0 16px 34px rgba(229, 46, 46, 0.14); }
-    .branch-card[data-branch="mobile"].is-active { box-shadow: 0 16px 34px rgba(37, 211, 102, 0.16); }
     .branch-card.is-active::before { opacity: 1; }
 
     .branch-card-top { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 14px; margin-bottom: 18px; }
-    .branch-icon { flex: 0 0 48px; width: 48px; height: 48px; display: grid; place-items: center; border-radius: 14px; color: #FFFFFF; font-size: 1.15rem; box-shadow: 0 8px 18px rgba(17, 24, 39, 0.16); }
-    .branch-card[data-branch="mall"] .branch-icon { background: linear-gradient(135deg, #E52E2E 0%, #B81412 100%); }
-    .branch-card[data-branch="mobile"] .branch-icon { background: linear-gradient(135deg, #25D366 0%, #0F9D58 100%); }
+    .branch-icon { flex: 0 0 48px; width: 48px; height: 48px; display: grid; place-items: center; border-radius: 14px; color: #FFFFFF; font-size: 1.15rem; box-shadow: 0 8px 18px rgba(17, 24, 39, 0.16); background: linear-gradient(135deg, #E52E2E 0%, #B81412 100%); }
     .branch-brand { flex: 1 1 auto; min-width: 0; }
     .branch-brand h3 { font-size: 1.05rem; font-weight: 800; line-height: 1.32; color: var(--text-dark); }
     .branch-address { display: flex; align-items: flex-start; gap: 7px; margin-top: 6px; color: var(--text-muted); font-size: 0.85rem; font-weight: 600; line-height: 1.45; }
     .branch-address i { margin-top: 3px; font-size: 0.82rem; color: var(--branch-accent); }
     .branch-tag { flex: 0 0 auto; align-self: flex-start; padding: 5px 11px; border: 1px solid #FBD5D5; border-radius: 50px; background: #FEF2F2; color: #C81E1E; font-size: 0.6rem; font-weight: 900; letter-spacing: 0.7px; text-transform: uppercase; }
-    .branch-card[data-branch="mobile"] .branch-tag { border-color: #BBF7D0; background: #ECFDF3; color: #15803D; }
     .store-hours { display: flex; align-items: center; gap: 10px; margin: auto 0 18px; padding: 10px 14px; border: 1px dashed var(--border-color); border-radius: 12px; background: #F8F9FA; color: var(--text-muted); font-size: 0.82rem; font-weight: 700; }
     .store-hours i { color: var(--primary-red); font-size: 0.95rem; }
     .store-actions { display: flex; flex-wrap: wrap; gap: 10px; }
     .btn-call,
-    .btn-directions { flex: 1 1 150px; min-width: 0; display: inline-flex; align-items: center; justify-content: center; gap: 9px; padding: 12px 18px; border-radius: 50px; text-decoration: none; font-weight: 800; font-size: 0.82rem; transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease; }
+    .btn-directions {
+      flex: 1 1 150px;
+      min-width: 0;
+      /* Pinned so the Mall card ("Call Showroom") and the Mobile Gallery card
+         ("Call Shop") stay exactly the same height despite the different label
+         lengths, on desktop as well as mobile - the mobile media query only
+         set min-height below 767px. */
+      min-height: 48px;
+      display: inline-flex; align-items: center; justify-content: center; gap: 9px; padding: 12px 18px; border-radius: 50px; text-decoration: none; font-weight: 800; font-size: 0.82rem; transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    }
     .btn-call { background: linear-gradient(135deg, var(--branch-red) 0%, var(--branch-red-dark) 100%); color: #FFFFFF; box-shadow: 0 8px 18px rgba(229, 46, 46, 0.26); }
     .btn-call:hover { transform: translateY(-2px); background: linear-gradient(135deg, var(--branch-red-dark) 0%, var(--branch-red-dark) 100%); box-shadow: 0 12px 24px rgba(229, 46, 46, 0.34); }
     .btn-directions { background: var(--branch-ink); color: #FFFFFF; box-shadow: 0 8px 18px rgba(17, 17, 17, 0.22); }
@@ -451,7 +462,7 @@
       background: #F3F4F6;
     }
     .branch-map-badge { position: absolute; top: 14px; left: 14px; z-index: 2; display: inline-flex; align-items: center; gap: 9px; max-width: calc(100% - 28px); padding: 9px 15px; border-radius: 50px; background: rgba(17, 17, 17, 0.88); color: #FFFFFF; font-size: 0.76rem; font-weight: 700; backdrop-filter: blur(6px); }
-    .branch-map-badge i { flex: 0 0 auto; color: var(--branch-green); font-size: 0.86rem; }
+    .branch-map-badge i { flex: 0 0 auto; color: var(--branch-red); font-size: 0.86rem; }
     .branch-map-badge span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
     /* --- Shop by Category Section --- */
@@ -1105,25 +1116,52 @@
 
   <div class="section-container">
 
-    <!-- Store Feature Strip (directly below hero slider) -->
-    <div class="store-trust-strip">
-      <div class="trust-item">
-        <span class="trust-icon"><i class="fa-solid fa-certificate"></i></span>
-        <div class="trust-text"><strong>100% Original Products</strong><span>Brand-sealed &amp; genuine</span></div>
+    <!-- Store Feature Strip (directly below hero slider).
+     Sits inside .section-container, so the grid fills that width as-is. -->
+    <section class="features-section">
+      <div class="features-grid">
+        <!-- Card 1: 100% genuine stock -->
+        <div class="feature-card">
+          <div class="feature-icon-box">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+          <div class="feature-content">
+            <h4>100% Original Products</h4>
+            <p>Brand-sealed &amp; genuine products</p>
+          </div>
+        </div>
+        <!-- Card 2: financing -->
+        <div class="feature-card">
+          <div class="feature-icon-box">
+            <i class="fa-solid fa-percentage"></i>
+          </div>
+          <div class="feature-content">
+            <h4>0% Down Payment EMI Available</h4>
+            <p>No-cost EMI on leading cards</p>
+          </div>
+        </div>
+        <!-- Card 3: same-day pickup -->
+        <div class="feature-card">
+          <div class="feature-icon-box">
+            <i class="fa-solid fa-store"></i>
+          </div>
+          <div class="feature-content">
+            <h4>Same-Day Store Pick-Up</h4>
+            <p>Buy today, take it home</p>
+          </div>
+        </div>
+        <!-- Card 4: warranty -->
+        <div class="feature-card">
+          <div class="feature-icon-box">
+            <i class="fa-solid fa-shield-halved"></i>
+          </div>
+          <div class="feature-content">
+            <h4>Official Brand Warranty</h4>
+            <p>Full manufacturer coverage</p>
+          </div>
+        </div>
       </div>
-      <div class="trust-item">
-        <span class="trust-icon"><i class="fa-solid fa-credit-card"></i></span>
-        <div class="trust-text"><strong>0% Down Payment EMI Available</strong><span>No-cost EMI on leading cards</span></div>
-      </div>
-      <div class="trust-item">
-        <span class="trust-icon"><i class="fa-solid fa-store"></i></span>
-        <div class="trust-text"><strong>Same-Day Store Pick-Up</strong><span>Buy today, take it home</span></div>
-      </div>
-      <div class="trust-item">
-        <span class="trust-icon"><i class="fa-solid fa-shield-halved"></i></span>
-        <div class="trust-text"><strong>Official Brand Warranty</strong><span>Full manufacturer coverage</span></div>
-      </div>
-    </div>
+    </section>
 
     <!-- Shop by Category Section -->
     <div class="section-header">
@@ -1595,7 +1633,7 @@
       <span class="nav-highlight-circle"><i class="fa-solid fa-gift"></i></span>
       <span>Offers</span>
     </a>
-    <a href="#insta-gallery" class="bottom-nav-item" data-nav="reels"><i class="fa-brands fa-instagram"></i><span>Reels</span></a>
+    <a href="wishlist.html" class="bottom-nav-item" data-nav="wishlist"><i class="fa-regular fa-heart"></i><span>Wishlist</span></a>
     <a href="https://wa.me/919926702666?text=Hello%20Patidar%20Mobile%20%26%20Electronics!%20I%20am%20visiting%20your%20website%20and%20would%20like%20to%20explore%20your%20latest%20offers%20and%20products." class="bottom-nav-item" data-nav="whatsapp" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp"></i><span>WhatsApp</span></a>
   </nav>
 

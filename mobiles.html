@@ -62,27 +62,10 @@
       margin-bottom: 12px;
     }
 
-    .header-back {
-      background: none;
-      border: none;
-      font-size: 1.3rem;
-      color: var(--text-dark);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-weight: 600;
-    }
-
-    .header-back:hover { color: var(--primary-red); }
-
-    .header-title {
-      flex: 1;
-      text-align: center;
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: var(--text-dark);
-    }
+    /* .header-back and .header-title typography now live in style.css. They were
+       duplicated on all three sub-pages and had drifted - the Back button, being
+       a <button>, never inherited the page font and rendered in the browser
+       default face at weight 600. See style.css. */
 
     .compare-btn {
       background: var(--primary-red);
@@ -597,9 +580,10 @@
         padding: 10px 12px;
       }
 
-      .header-title {
-        font-size: 1rem;
-      }
+      /* A lone ".header-title { font-size: 1rem }" used to live here. It shrank the
+         title on small screens but not the Back button beside it, so the two
+         visibly disagreed - and category.html / wishlist.html never had it at all.
+         Both are now 1.1rem from style.css at every width. */
 
       .compare-btn {
         padding: 4px 8px;

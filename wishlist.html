@@ -55,12 +55,9 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
     .header-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-    .header-back {
-      background: none; border: none; font-size: 1.3rem; color: var(--text-dark);
-      cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600;
-    }
-    .header-back:hover { color: var(--primary-red); }
-    .header-title { flex: 1; text-align: center; font-size: 1.1rem; font-weight: 700; }
+    /* .header-back / .header-title typography now live in style.css. The Back
+       button here is a <button> and so never inherited the page font - that was
+       the mismatch. */
 
     /* Badge is painted by js/wishlist.js: [data-wishlist-count] is the number,
        [data-wishlist-badge] is the wrapper hidden at zero. */
