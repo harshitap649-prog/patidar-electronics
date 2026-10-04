@@ -22,6 +22,8 @@
   <!-- Shared Back handler (referrer-aware, falls back to index.html). Defines
        window.goBack, which the header button below calls. -->
   <script src="js/nav.js"></script>
+  <!-- Shared slide-out site menu. Deferred so it binds after the drawer exists. -->
+  <script src="js/side-menu.js" defer></script>
   <style>
     :root {
       --primary-red: #E52321;
@@ -199,35 +201,11 @@
       transform: translateY(-2px);
     }
 
-    /* The action header above is normal flow, so the photo can never sit under
-       the compare/wishlist controls. The margin just keeps a visible gap
-       between the header row and the image area. */
-    .product-image-wrapper {
-      position: relative;
-      background: #F9FAFB;
-      height: 220px;
-      margin-top: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-    }
-
-    .product-image {
-      max-width: 100%;
-      max-height: 200px;
-      object-fit: contain;
-      object-position: center;
-      width: 100%;
-      height: 200px;
-      padding: 6px 10px;
-      transition: opacity 0.25s ease;
-    }
-
-    /* Deterministic branded card / transparent outline shown instead of a missing photo */
-    .product-image.is-placeholder {
-      opacity: 0.85;
-    }
+    /* .product-image-wrapper and .product-image now live in style.css. They were
+       duplicated here, mobiles.html and wishlist.html with "keep in sync"
+       comments, and they had drifted - all three shrank the wrapper to 140px on
+       mobile while the image stayed pinned at 200px tall, so overflow:hidden
+       clipped the bottom off every product photo. See style.css for the fix. */
 
     /* --- Card action header: Compare (left) + wishlist (right) ---
        Ported verbatim from mobiles.html. Replaces the old `.product-top`
@@ -471,7 +449,6 @@
     }
 
     @media (max-width: 500px) {
-      .product-image-wrapper { height: 140px; }
       /* Two-up grid makes cards narrow; tighten the action row so Compare and
          the heart keep fitting on one line without wrapping. */
       .card-actions-header { padding: 6px 8px; gap: 6px; }
@@ -506,6 +483,12 @@
       </button>
       <div class="header-title" id="headerTitle">Showroom Products</div>
       <div class="header-actions">
+        <!-- Wishlist moved into the side drawer (js/side-menu.js); this copy stays
+             in the DOM as the no-JS fallback and is hidden via .js-menu-ready.
+             The burger opens the drawer that now holds the only real entry. -->
+        <button class="menu-trigger" type="button" data-menu-open aria-controls="sideMenu" aria-label="Open menu">
+          <i class="fa-solid fa-bars"></i>
+        </button>
         <a class="wishlist-link" href="wishlist.html" aria-label="Open my wishlist">
           <i class="fa-regular fa-heart"></i>
           <span class="wishlist-link-text">Wishlist</span>
@@ -532,6 +515,41 @@
       <button class="filter-chip" data-price="above40k">Above ₹40k</button>
     </div>
   </div>
+
+  <!-- Slide-out site menu. Opened by .menu-trigger in the header above; see
+  js/side-menu.js. Identical markup on all four pages by design. -->
+  <div class="side-menu" id="sideMenu" role="dialog" aria-modal="true" aria-label="Site menu" hidden>
+    <div class="side-menu-head">
+      <div class="side-menu-brand">
+        <img src="banner.png" alt="" width="34" height="34">
+        <span>Patidar Electronics</span>
+      </div>
+      <button class="side-menu-close" type="button" data-menu-close aria-label="Close menu">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="side-menu-body">
+      <ul class="side-menu-list">
+        <li><a class="side-menu-item side-menu-item-wishlist" href="wishlist.html">
+          <i class="fa-regular fa-heart"></i>
+          <span class="side-menu-item-label">My Wishlist</span>
+          <span class="wishlist-badge" data-wishlist-badge><span data-wishlist-count>0</span></span>
+        </a></li>
+      </ul>
+      <div class="side-menu-sep">Browse</div>
+      <ul class="side-menu-list">
+        <li><a class="side-menu-item" href="index.html"><i class="fa-solid fa-house"></i><span class="side-menu-item-label">Home</span></a></li>
+        <li><a class="side-menu-item" href="mobiles.html"><i class="fa-solid fa-mobile-screen"></i><span class="side-menu-item-label">Mobiles &amp; Tablets</span></a></li>
+        <li><a class="side-menu-item" href="category.html"><i class="fa-solid fa-layer-group"></i><span class="side-menu-item-label">All Categories</span></a></li>
+      </ul>
+      <div class="side-menu-sep">Visit us</div>
+      <ul class="side-menu-list">
+        <li><a class="side-menu-item" href="index.html#store-location"><i class="fa-solid fa-location-dot"></i><span class="side-menu-item-label">Store Location</span></a></li>
+        <li><a class="side-menu-item" href="https://wa.me/919926702666?text=Hello%20Patidar%20Mobile%20%26%20Electronics!%20I%20am%20visiting%20your%20website%20and%20would%20like%20to%20explore%20your%20latest%20offers%20and%20products." target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i><span class="side-menu-item-label">WhatsApp Us</span></a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="side-menu-overlay" data-menu-close hidden></div>
 
   <!-- Main Content -->
   <div class="main-container" id="mainContainer">

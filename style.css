@@ -13,13 +13,18 @@
 
 .footer-ad-wrapper {
   /* Placeholder height reserves the slot before the creative arrives, so the
-     page does not reflow when the ad loads. */
-  min-height: 90px;
-  margin: 25px 0 10px;
+     page does not reflow when the ad loads. Sized for the full stack - label
+     plus creative - not the creative alone. */
+  min-height: 110px;
+  margin: 20px 0 15px;
   display: flex;
+  /* Column, not row. Row layout put the label beside the banner instead of
+     above it, which is what the flex column is here to prevent. */
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   text-align: center;
+  width: 100%;
   /* Keep an oversized creative from widening the page. */
   max-width: 100%;
   overflow: hidden;
@@ -27,12 +32,15 @@
 
 .ad-sponsor-label {
   display: block;
-  font-size: 10px;
+  font-size: 11px;
   color: #9ca3af;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
   text-transform: uppercase;
   font-weight: 600;
-  margin-bottom: 8px;
+  /* Full width so text-align centres the label over the banner rather than
+     over the label's own content box. */
+  width: 100%;
+  margin-bottom: 6px;
 }
 
 /* Both units are in the DOM; exactly one is ever shown *and* only one is ever
@@ -45,8 +53,8 @@
 @media (max-width: 768px) {
   .ad-desktop-only { display: none !important; }
   .ad-mobile-only  { display: block !important; }
-  /* 320x50 plus a little breathing room inside the wrapper. */
-  .footer-ad-wrapper { min-height: 50px; }
+  /* 320x50 banner + the label row above it + a little breathing room. */
+  .footer-ad-wrapper { min-height: 70px; }
 }
 
 @media (min-width: 769px) {
@@ -57,3 +65,226 @@
 /* js/ads.js leaves this class on the slot while the creative is in flight, so a
    blocked or slow ad network degrades to a clean label rather than a hole. */
 .footer-ad-wrapper.is-empty .ad-sponsor-label { margin-bottom: 0; }
+
+/* =============================================================================
+ * Product card image area
+ * -----------------------------------------------------------------------------
+ * Previously this rule set was copy-pasted into mobiles.html, category.html and
+ * wishlist.html, each with a "keep in sync" comment - and they had drifted: all
+ * three shrank .product-image-wrapper to 140px at <=500px while .product-image
+ * stayed pinned at height:200px. In a flex wrapper with overflow:hidden that
+ * overflowed the box by 60px and clipped the bottom of every product photo.
+ *
+ * object-fit:contain could not rescue that. object-fit only scales the replaced
+ * content inside the element's OWN content box; here the element box itself was
+ * taller than the container, so the wrapper's overflow:hidden did the cutting.
+ *
+ * The fix is width/height:auto with max-width/max-height:100%, so the photo
+ * scales down to fit whatever the wrapper is and is centred by flexbox. Whole
+ * product always visible - no cropping, no overflow, at any width.
+ * ========================================================================== */
+
+.product-image-wrapper {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  padding: 8px;
+  box-sizing: border-box;
+  background: #F9FAFB;
+  /* The action header above is normal flow, so the photo can never sit under
+     the compare/wishlist controls. The margin just keeps a visible gap. */
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Final safety net only - with the sizing below nothing should ever reach it. */
+  overflow: hidden;
+}
+
+.product-image {
+  display: block;
+  width: auto;
+  height: auto;
+  /* Scale to fit the wrapper on BOTH axes; whichever axis binds first wins, and
+     the intrinsic aspect ratio is preserved, so nothing is ever stretched. */
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  object-position: center;
+  margin: 0 auto;
+  transition: opacity 0.25s ease;
+}
+
+/* Deterministic branded card shown instead of a missing photo. */
+.product-image.is-placeholder { opacity: 0.85; }
+
+/* Two-up mobile grid. The wrapper is the only thing that shrinks; the photo
+   follows it via max-height:100%, which is what stops the clipping. */
+@media (max-width: 768px) {
+  .product-image-wrapper { height: 140px; padding: 6px; }
+}
+
+/* =============================================================================
+ * Site menu drawer
+ * -----------------------------------------------------------------------------
+ * Shared by index.html, mobiles.html, category.html and wishlist.html for the
+ * same reason the ad rules live here: four copies of a slide-out panel would
+ * drift apart. js/side-menu.js drives the open/close state and only toggles
+ * .is-open / [hidden] on these nodes, so every rule below is pure CSS state.
+ * ========================================================================== */
+
+/* Side-menu palette maps onto the custom properties every page already declares
+   (:root in each page's <style>), with hard fallbacks so the drawer still renders
+   if style.css is ever loaded without them. */
+.side-menu {
+  --menu-surface: var(--card-white, #ffffff);
+  --menu-soft: var(--surface-soft, #F3F4F6);
+  --menu-border: var(--border-color, #E5E7EB);
+  --menu-hover: #FEE2E2;
+  --menu-accent: var(--primary-red, #ef3340);
+  --menu-ink: var(--text-dark, #111827);
+  --menu-muted: var(--text-muted, #6B7280);
+}
+
+.side-menu {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: min(300px, 86vw);
+  display: flex;
+  flex-direction: column;
+  background: var(--menu-surface, #ffffff);
+  z-index: 10002;
+  transform: translateX(-100%);
+  visibility: hidden;
+  transition: transform 0.28s ease, visibility 0.28s ease;
+  box-shadow: 4px 0 24px rgba(17, 17, 17, 0.16);
+}
+
+/* [hidden] is the no-JS guard, but the .side-menu rule above sets display:flex
+   and would beat the user-agent [hidden]{display:none} on specificity - leaving
+   the attribute inert. Restated here so "closed" is authoritative in both cases.
+   js/side-menu.js clears it before adding .is-open so the slide still animates. */
+.side-menu[hidden] { display: none; }
+
+/* State is driven by the .is-open class rather than [hidden] alone so the CSS
+   transition can actually run - [hidden] would skip straight to display:none. */
+.side-menu.is-open { transform: translateX(0); visibility: visible; }
+
+.side-menu-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 17, 17, 0.45);
+  z-index: 10001;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.28s ease, visibility 0.28s ease;
+}
+.side-menu-overlay.is-open { opacity: 1; visibility: visible; }
+
+.side-menu-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--menu-border, #E5E7EB);
+}
+
+.side-menu-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--menu-ink);
+}
+
+.side-menu-brand img { height: 34px; width: auto; object-fit: contain; }
+
+.side-menu-close {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border: 1px solid var(--menu-border);
+  border-radius: 10px;
+  background: var(--menu-soft);
+  color: var(--menu-ink);
+  font-size: 1rem;
+  cursor: pointer;
+}
+.side-menu-close:hover { background: var(--menu-hover); color: var(--menu-accent); }
+
+.side-menu-body { flex: 1; overflow-y: auto; padding: 10px 12px 20px; }
+
+.side-menu-list { list-style: none; margin: 0; padding: 0; }
+
+.side-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 12px 14px;
+  margin-bottom: 4px;
+  border-radius: 12px;
+  color: var(--menu-ink);
+  font-size: 0.92rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.side-menu-item i { width: 22px; text-align: center; font-size: 1rem; color: var(--menu-accent); }
+.side-menu-item:hover { background: var(--menu-hover); color: var(--menu-accent); }
+.side-menu-item.is-active { background: var(--menu-soft); }
+
+/* Wishlist is the promoted entry: its own row so the live count badge that
+   js/wishlist.js paints into [data-wishlist-count] stays legible. */
+.side-menu-item-wishlist {
+  background: var(--menu-soft);
+  margin-bottom: 10px;
+}
+.side-menu-item-wishlist:hover { background: var(--menu-accent); color: #FFFFFF; }
+.side-menu-item-wishlist:hover i,
+.side-menu-item-wishlist:hover .wishlist-badge { color: #FFFFFF; }
+.side-menu-item-wishlist:hover .wishlist-badge { background: #FFFFFF; color: var(--menu-accent); }
+
+.side-menu-item-label { flex: 1; min-width: 0; }
+
+.side-menu-sep {
+  margin: 14px 4px 10px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--menu-muted);
+}
+
+/* Trigger for mobiles.html / category.html / wishlist.html, which have no menu
+   control of their own. index.html reuses its existing .menu-btn instead and so
+   deliberately does not carry this class - the two must not fight over width.
+   Hidden until js/side-menu.js confirms the drawer is wired. */
+.menu-trigger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  min-height: 48px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 1px solid var(--border-color, var(--menu-border, #E5E7EB));
+  border-radius: 12px;
+  background: var(--surface-soft, var(--menu-soft, #F3F4F6));
+  color: var(--text-dark, var(--menu-ink, #111827));
+  font-size: 1rem;
+  cursor: pointer;
+}
+.menu-trigger:hover { background: #FEE2E2; color: var(--primary-red, var(--menu-accent, #ef3340)); }
+
+/* The drawer is inert until js/side-menu.js takes over, so without JS the page
+   keeps its header Wishlist link instead of showing a permanently unusable
+   panel. js/side-menu.js adds .js-menu-ready to <html> once it has bound, and
+   only then is the header copy removed and the trigger revealed. */
+.js-menu-ready .wishlist-link { display: none; }
+.js-menu-ready .menu-trigger { display: inline-flex; }

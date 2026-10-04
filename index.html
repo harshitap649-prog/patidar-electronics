@@ -22,6 +22,9 @@
   <script src="js/wishlist.js"></script>
   <!-- Shared footer ad loader: requests exactly one unit per page. -->
   <script src="js/ads.js"></script>
+  <!-- Shared slide-out site menu (drawer markup + .menu-btn trigger are in the
+       body below). Deferred so it binds after the drawer exists. -->
+  <script src="js/side-menu.js" defer></script>
 
   <style>
     :root {
@@ -217,95 +220,45 @@
     .customer-caption { color: #374151; font-size: 0.78rem; font-weight: 700; line-height: 1.4; margin-bottom: 8px; }
     .customer-verified { display: inline-flex; align-items: center; gap: 5px; color: #16A34A; font-size: 0.68rem; font-weight: 700; }
 
-    /* --- Festival Deal Hero Banner --- */
-    .claim-offer-section {
-      position: relative;
-      isolation: isolate;
-      overflow: hidden;
-      background: linear-gradient(135deg, #F8FAFC 0%, #FFF7F7 55%, #FDEAEA 100%);
-      border: 1px solid #F6DDDD;
-      border-radius: 16px;
-      box-shadow: 0 14px 34px rgba(17, 24, 39, 0.08);
-      padding: 38px 42px;
-      margin: 40px 0 14px;
+    /* --- Festival Offer Banner ---
+   The offer is now one 1408x768 artwork instead of a text card. The banner is
+   sized from the artwork's own aspect ratio (width/height attributes on the
+   <img> + height:auto), so it scales down to any viewport with nothing cropped:
+   the text and product shots baked into the image are always shown whole.
+   max-width:100% + object-fit:contain are belt-and-braces, not the mechanism. */
+.offer-section {
+      width: 100%;
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 0;
+      box-sizing: border-box;
+      text-align: center;
+      /* #festival-offer is the target of the bottom-nav "Offers" tab; without
+         this the sticky header would cover the top of the banner on arrival. */
+      scroll-margin-top: 80px;
     }
-    .offer-layout {
-      position: relative;
-      z-index: 1;
-      display: grid;
-      grid-template-columns: 1.1fr 0.9fr;
-      align-items: center;
-      gap: 36px;
-    }
-    .offer-copy { min-width: 0; }
-    .offer-pill { display: inline-flex; align-items: center; gap: 7px; padding: 7px 14px; border: 1px solid #FBB4B4; border-radius: 50px; color: #C81E1E; background: #FEE2E2; font-size: 0.7rem; font-weight: 800; letter-spacing: 1.2px; }
-    .offer-pill i { color: #E52321; font-size: 0.66rem; }
-    .claim-offer-section h3 { font-size: clamp(1.65rem, 2.7vw, 2.4rem); line-height: 1.15; font-weight: 800; color: #111827; margin: 16px 0 10px; overflow-wrap: break-word; }
-    .claim-offer-section h3 span { color: #E52321; }
-    .claim-offer-section p { font-size: 0.98rem; line-height: 1.65; color: #4B5563; max-width: 560px; margin: 0 0 18px; overflow-wrap: break-word; }
-    .claim-offer-section p strong { color: #E52321; }
-    .offer-timer { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
-    .timer-caption { display: inline-flex; align-items: center; gap: 6px; color: #6B7280; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.9px; text-transform: uppercase; }
-    .timer-caption i { color: #E52321; }
-    .offer-countdown { display: flex; align-items: stretch; gap: 8px; }
-    .count-pill {
-      min-width: 64px;
-      padding: 8px 10px;
+    .banner-wrapper {
+      width: 100%;
       display: flex;
-      flex-direction: column;
-      align-items: center;
       justify-content: center;
-      gap: 3px;
-      background: #FFFFFF;
-      border: 1px solid #F1D9D9;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(17, 24, 39, 0.06);
-    }
-    .count-pill strong { font-size: 1.2rem; font-weight: 800; line-height: 1; color: #111827; font-variant-numeric: tabular-nums; }
-    .count-pill span { font-size: 0.58rem; font-weight: 700; letter-spacing: 0.7px; text-transform: uppercase; color: #9CA3AF; }
-    .offer-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
-    .offer-art {
-      position: relative;
-      display: block;
+      align-items: center;
       overflow: hidden;
-      aspect-ratio: 16 / 11;
-      background: #FFFFFF;
-      border: 1px solid #F1E1E1;
       border-radius: 16px;
+      background: #F9FAFB;
       box-shadow: 0 12px 28px rgba(17, 24, 39, 0.10);
     }
-    .offer-art img { display: block; width: 100%; height: 100%; object-fit: cover; }
-    .offer-art-label {
-      position: absolute;
-      top: 14px;
-      left: 14px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 7px 13px;
-      border-radius: 50px;
-      background: linear-gradient(135deg, #E52321 0%, #B91C1C 100%);
-      color: #FFFFFF;
-      font-size: 0.68rem;
-      font-weight: 900;
-      letter-spacing: 1px;
-      box-shadow: 0 6px 16px rgba(229, 35, 33, 0.4);
+    .offer-banner {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-width: 100%;
+      object-fit: contain;
     }
-    .btn-claim {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      background: #25D366;
-      color: #FFFFFF;
-      font-size: 0.95rem;
-      font-weight: bold;
-      padding: 14px 28px;
-      border-radius: 50px;
-      text-decoration: none;
-      box-shadow: 0 4px 14px rgba(37, 211, 102, 0.22);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    .btn-claim:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(37, 211, 102, 0.55); }
+
+    /* Reused by the "TRUST & SMILES" badge in the Happy Customers header, so it
+       stays even though the festival text card that shared it is gone. */
+    .offer-pill { display: inline-flex; align-items: center; gap: 7px; padding: 7px 14px; border: 1px solid #FBB4B4; border-radius: 50px; color: #C81E1E; background: #FEE2E2; font-size: 0.7rem; font-weight: 800; letter-spacing: 1.2px; }
+    .offer-pill i { color: #E52321; font-size: 0.66rem; }
 
     /* --- Store Trust Strip --- */
     .store-trust-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 0 0 40px; }
@@ -944,14 +897,7 @@
       .reels-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
       .customer-photo { height: 180px; }
       .customer-card img { height: 100%; }
-      .claim-offer-section { padding: 26px 18px; margin-top: 32px; }
-      .offer-layout { grid-template-columns: 1fr; gap: 24px; text-align: center; }
-      .claim-offer-section p { margin-left: auto; margin-right: auto; }
-      .offer-timer { justify-content: center; }
-      .offer-countdown { width: 100%; }
-      .count-pill { flex: 1 1 0; min-width: 0; }
-      .offer-art { aspect-ratio: 16 / 10; min-height: 0; }
-      .btn-claim { width: 100%; justify-content: center; padding: 14px 20px; font-size: 1rem; }
+      .offer-section { margin: 32px auto; }
       .store-trust-strip { grid-template-columns: repeat(2, 1fr); gap: 10px; }
       .trust-item { flex-direction: column; align-items: flex-start; gap: 8px; padding: 12px 14px; }
       .category-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
@@ -987,7 +933,9 @@
     .bottom-nav-item.active svg, .bottom-nav-item.active i { fill: #E52321 !important; stroke: #E52321 !important; }
 
     @media (max-width: 767px) {
-      body { padding-bottom: 70px !important; }
+      /* 60px bar + the Offers FAB floating ~22px above it + breathing room, so
+         the circle never covers the last row of page content. */
+      body { padding-bottom: 88px !important; }
       nav { min-height: 60px; padding: 10px 16px; background: rgba(255,255,255,0.95); border-bottom: 1px solid #F0F0F0; backdrop-filter: blur(10px); z-index: 1000; }
       .nav-left { gap: 8px; min-width: 0; }
       .brand-logo { max-width: 150px; height: 36px; min-width: 0; flex: 0 1 auto; }
@@ -1006,14 +954,61 @@
       .category-title { min-height: 52px; padding: 10px 7px; font-size: 0.76rem; }
       .customers-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 0 12px; }
       .customer-card { min-width: 0; }
-      .claim-offer-section { scroll-margin-top: 80px; }
-      .offer-layout { grid-template-columns: 1fr; gap: 26px; }
-      .offer-art { aspect-ratio: 16 / 10; max-height: 300px; }
+      /* Sticky header clearance for the #festival-offer anchor; the base rule
+         covers it too, kept here alongside .insta-section-bar for symmetry. */
+      .offer-section { scroll-margin-top: 80px; }
       .insta-section-bar { scroll-margin-top: 80px; }
       .mobile-app-nav { position: fixed !important; bottom: 0 !important; top: auto !important; left: 0 !important; right: 0 !important; width: 100% !important; height: 60px !important; background: #ffffff !important; border-top: 1px solid #e5e7eb !important; display: flex !important; justify-content: space-around !important; align-items: center !important; z-index: 99999 !important; box-shadow: 0 -2px 10px rgba(0,0,0,0.08) !important; padding: 0 !important; }
       .mobile-app-nav .bottom-nav-item { position: relative; display: flex; flex: 1; min-height: 48px; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #6B7280; text-decoration: none; font-size: 0.65rem; font-weight: 700; border-radius: 12px; transition: color 0.2s ease, background 0.2s ease; }
       .mobile-app-nav .bottom-nav-item.active::before { content: ''; position: absolute; top: 2px; width: 34px; height: 4px; border-radius: 50px; background: #E52321; }
       .mobile-app-nav .bottom-nav-item:active { background: #FEF2F2; transform: scale(0.96); }
+
+      /* --- Center "Offers" FAB ---
+         The bar is 60px and its items are vertically centred, so a 52px circle
+         plus a label cannot fit inside it: leaving the circle in normal flow
+         pushed the "Offers" label ~7px below the bar and off-screen. The circle
+         is therefore taken out of flow and floats above the bar, while a spacer
+         holds the label slot open at the same height as the Font Awesome icon
+         line (1.125em - measured against the real glyph box, not guessed) so
+         all five labels share a baseline. */
+      .mobile-app-nav .bottom-nav-item-highlight { overflow: visible; }
+      .mobile-app-nav .nav-highlight-spacer { display: block; width: 100%; height: 1.125em; }
+      .mobile-app-nav .nav-highlight-circle {
+        position: absolute;
+        top: -34px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: grid;
+        place-items: center;
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: #E52321;
+        /* White ring so the circle reads as separate from the bar behind it. */
+        border: 3px solid #FFFFFF;
+        box-shadow: 0 4px 12px rgba(229, 35, 33, 0.4);
+        color: #FFFFFF;
+        transition: transform 0.2s ease;
+      }
+      /* Explicit colour on the glyph: the .active rule colours the whole item
+         #E52321 !important, which would sink the icon into the red circle. */
+      .mobile-app-nav .nav-highlight-circle i { font-size: 22px; color: #FFFFFF; }
+      .mobile-app-nav .bottom-nav-item-highlight > span:last-child { color: #E52321; font-weight: 700; }
+
+      /* The active marker is a tab-style dash pinned to the item's top edge; on
+         the FAB it would hover above the circle as a stray red bar. */
+      .mobile-app-nav .bottom-nav-item-highlight.active::before { content: none; }
+
+      /* Pressed: tint the circle instead of painting a pink block behind it,
+         and drop the shared scale(0.96) which would displace the absolute
+         circle from the item it is positioned against. */
+      .mobile-app-nav .bottom-nav-item-highlight:active {
+        background: transparent;
+        transform: none;
+      }
+      .mobile-app-nav .bottom-nav-item-highlight:active .nav-highlight-circle {
+        transform: translateX(-50%) scale(0.94);
+      }
       .slider-container { height: auto; min-height: 0; aspect-ratio: 16 / 9; border-radius: 12px; }
       .slider-container .slide img { width: 100%; height: auto; min-height: 100%; object-fit: cover; }
       .categories-modal.active, .reels-modal.active { align-items: flex-end; }
@@ -1024,7 +1019,7 @@
       .categories-modal .modal-body { padding-bottom: 76px; }
       .reels-modal { padding: 0; }
       .reels-modal .reels-modal-content { width: 100%; }
-      button, .filter-chip, .btn-claim, .btn-directions, .btn-call { min-height: 48px; }
+      button, .filter-chip, .btn-directions, .btn-call { min-height: 48px; }
       .store-actions { width: 100%; }
       .store-actions .btn-call, .store-actions .btn-directions { flex: 1 1 auto; }
     }
@@ -1038,10 +1033,13 @@
   <nav>
     <div class="nav-left">
       <img src="banner.png" alt="Patidar Electronics Mall" class="brand-logo" id="topLogo">
-      <button class="menu-btn"><i class="fa-solid fa-bars"></i> <span>Menu</span></button>
+      <button class="menu-btn" data-menu-open aria-controls="sideMenu" aria-label="Open menu"><i class="fa-solid fa-bars"></i> <span>Menu</span></button>
       <button class="mobile-search-btn" onclick="openCategoriesModal()" aria-label="Search categories"><i class="fa-solid fa-magnifying-glass"></i></button>
     </div>
     <div class="nav-right">
+      <!-- Wishlist moved into the side drawer (js/side-menu.js). Kept in the DOM
+           as the no-JS fallback and hidden by style.css via .js-menu-ready.
+           Location stays visible here. -->
       <a href="wishlist.html" class="wishlist-link" aria-label="Open my wishlist">
         <i class="fa-regular fa-heart"></i> <span>Wishlist</span>
         <span class="wishlist-badge" data-wishlist-badge><span data-wishlist-count>0</span></span>
@@ -1051,6 +1049,40 @@
       </a>
     </div>
   </nav>
+
+  <!-- Slide-out site menu. Opened by .menu-btn above; see js/side-menu.js. -->
+  <div class="side-menu" id="sideMenu" role="dialog" aria-modal="true" aria-label="Site menu" hidden>
+    <div class="side-menu-head">
+      <div class="side-menu-brand">
+        <img src="banner.png" alt="" width="34" height="34">
+        <span>Patidar Electronics</span>
+      </div>
+      <button class="side-menu-close" type="button" data-menu-close aria-label="Close menu">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="side-menu-body">
+      <ul class="side-menu-list">
+        <li><a class="side-menu-item side-menu-item-wishlist" href="wishlist.html">
+          <i class="fa-regular fa-heart"></i>
+          <span class="side-menu-item-label">My Wishlist</span>
+          <span class="wishlist-badge" data-wishlist-badge><span data-wishlist-count>0</span></span>
+        </a></li>
+      </ul>
+      <div class="side-menu-sep">Browse</div>
+      <ul class="side-menu-list">
+        <li><a class="side-menu-item" href="index.html"><i class="fa-solid fa-house"></i><span class="side-menu-item-label">Home</span></a></li>
+        <li><a class="side-menu-item" href="mobiles.html"><i class="fa-solid fa-mobile-screen"></i><span class="side-menu-item-label">Mobiles &amp; Tablets</span></a></li>
+        <li><a class="side-menu-item" href="category.html"><i class="fa-solid fa-layer-group"></i><span class="side-menu-item-label">All Categories</span></a></li>
+      </ul>
+      <div class="side-menu-sep">Visit us</div>
+      <ul class="side-menu-list">
+        <li><a class="side-menu-item" href="#store-location"><i class="fa-solid fa-location-dot"></i><span class="side-menu-item-label">Store Location</span></a></li>
+        <li><a class="side-menu-item" href="https://wa.me/919926702666?text=Hello%20Patidar%20Mobile%20%26%20Electronics!%20I%20am%20visiting%20your%20website%20and%20would%20like%20to%20explore%20your%20latest%20offers%20and%20products." target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i><span class="side-menu-item-label">WhatsApp Us</span></a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="side-menu-overlay" data-menu-close hidden></div>
 
   <!-- Big Screen 4-Image Hero Banner Slider -->
   <div class="slider-container">
@@ -1393,31 +1425,20 @@
     <!-- In-feed ad removed here too; the single footer ad at the bottom of this
          file replaces it. -->
 
-    <!-- Festival Deal Hero Banner -->
-    <section class="claim-offer-section" id="festival-offer">
-      <div class="offer-layout">
-        <div class="offer-copy">
-          <span class="offer-pill"><i class="fa-solid fa-bolt"></i> LIMITED TIME FESTIVE OFFER</span>
-          <h3>Exclusive <span>Festive Bumper Deal</span></h3>
-          <p>Buy any selected <strong>Vivo &amp; Oppo smartphone</strong> this festive season and get a <strong>GUARANTEED FREE BICYCLE</strong> 🚲 — plus instant exchange bonus &amp; no-cost EMI, only at Patidar Mobile &amp; Electronics.</p>
-          <div class="offer-timer">
-            <span class="timer-caption"><i class="fa-regular fa-clock"></i> Offer Ends In</span>
-            <div class="offer-countdown">
-              <div class="count-pill"><strong id="cdDays">02</strong><span>Days</span></div>
-              <div class="count-pill"><strong id="cdHours">14</strong><span>Hours</span></div>
-              <div class="count-pill"><strong id="cdMins">30</strong><span>Mins</span></div>
-            </div>
-          </div>
-          <div class="offer-actions">
-            <a href="https://wa.me/919926702666?text=Hello%20Patidar%20Mobile%20%26%20Electronics!%20I%20am%20visiting%20your%20website%20and%20would%20like%20to%20explore%20your%20latest%20offers%20and%20products." class="btn-claim" target="_blank" rel="noopener noreferrer">
-              <i class="fa-brands fa-whatsapp"></i> Claim Offer on WhatsApp
-            </a>
-          </div>
-        </div>
-        <div class="offer-art" aria-label="Festive bumper deal promo image">
-          <img src="images/ChatGPT Image Oct 3, 2026, 01_07_50 PM.png" alt="Festive bumper deal on selected smartphones" loading="lazy">
-          <span class="offer-art-label"><i class="fa-solid fa-gift"></i> FREE GIFT</span>
-        </div>
+    <!-- Fully Responsive Festive Bumper Offer Banner.
+     The whole offer is one 1408x768 artwork. The width/height attributes give
+     the browser the aspect ratio up front (no layout shift before the file
+     loads) and height:auto then scales it to any viewport without cropping. -->
+    <section class="offer-section" id="festival-offer">
+      <div class="banner-wrapper">
+        <img
+          class="offer-banner"
+          src="images/offer img.png"
+          alt="Patidar Electronics Festive Bumper Offer: Free Assured Gifts like Smartwatches, Speakers, Bicycles"
+          width="1408"
+          height="768"
+          loading="lazy"
+          decoding="async">
       </div>
     </section>
 
@@ -1569,7 +1590,11 @@
   <nav class="mobile-app-nav" aria-label="Mobile app navigation">
     <a href="index.html" class="bottom-nav-item" data-nav="home"><i class="fa-solid fa-house"></i><span>Home</span></a>
     <a href="#category-section" class="bottom-nav-item" data-nav="categories" onclick="openCategoriesModal(); return false;"><i class="fa-solid fa-layer-group"></i><span>Categories</span></a>
-    <a href="#festival-offer" class="bottom-nav-item" data-nav="offers"><i class="fa-solid fa-gift"></i><span>Offers</span></a>
+    <a href="#festival-offer" class="bottom-nav-item bottom-nav-item-highlight" data-nav="offers">
+      <span class="nav-highlight-spacer" aria-hidden="true"></span>
+      <span class="nav-highlight-circle"><i class="fa-solid fa-gift"></i></span>
+      <span>Offers</span>
+    </a>
     <a href="#insta-gallery" class="bottom-nav-item" data-nav="reels"><i class="fa-brands fa-instagram"></i><span>Reels</span></a>
     <a href="https://wa.me/919926702666?text=Hello%20Patidar%20Mobile%20%26%20Electronics!%20I%20am%20visiting%20your%20website%20and%20would%20like%20to%20explore%20your%20latest%20offers%20and%20products." class="bottom-nav-item" data-nav="whatsapp" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp"></i><span>WhatsApp</span></a>
   </nav>
@@ -1650,24 +1675,11 @@
       changeSlide(1);
     }, 4000);
 
-    const offerEndsAt = Date.now() + (2 * 24 * 60 * 60 * 1000) + (14 * 60 * 60 * 1000) + (30 * 60 * 1000);
-    const cdDays = document.getElementById('cdDays');
-    const cdHours = document.getElementById('cdHours');
-    const cdMins = document.getElementById('cdMins');
-
-    function updateOfferCountdown() {
-      const remaining = Math.max(0, offerEndsAt - Date.now());
-      const totalMinutes = Math.floor(remaining / 60000);
-      const days = Math.floor(totalMinutes / 1440);
-      const hours = Math.floor((totalMinutes % 1440) / 60);
-      const minutes = totalMinutes % 60;
-      cdDays.textContent = String(days).padStart(2, '0');
-      cdHours.textContent = String(hours).padStart(2, '0');
-      cdMins.textContent = String(minutes).padStart(2, '0');
-    }
-
-    updateOfferCountdown();
-    setInterval(updateOfferCountdown, 1000);
+    // The festival offer used to run a live countdown here, driving #cdDays /
+    // #cdHours / #cdMins with a setInterval every second. The banner now shows a
+    // static urgency badge instead, so that markup and this ticker are gone
+    // together - leaving the timer running would throw on the missing nodes and
+    // would also have burned a wake-up every second for the life of the tab.
 
     /* --- Video Reel Mute / Fullscreen Logic --- */
     function toggleVideo(card) {
