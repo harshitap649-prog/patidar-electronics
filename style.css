@@ -505,21 +505,99 @@
 }
 .menu-trigger:hover { background: #FEE2E2; color: var(--primary-red, var(--menu-accent, #ef3340)); }
 
+/* =============================================================================
+ * Mobile bottom navigation bar
+ * -----------------------------------------------------------------------------
+ * Shared by all four pages. This used to live only in index.html's own <style>
+ * block, which mobiles.html / category.html / wishlist.html never loaded - so
+ * those three pages had no bottom nav at all and the drawer was their only way
+ * to navigate. It now lives here so the bar can be one component.
+ *
+ * These rules were lifted verbatim from index.html and the copies there were
+ * removed, so the bar cannot drift between pages. index.html's own "Offers" FAB
+ * (the .bottom-nav-item-highlight rules) stays page-local: only index.html uses
+ * it, and it is positioned against these base rules.
+ *
+ * Breakpoint is 767px to match the one that reveals the bar. At 768px the bar is
+ * absent, so the drawer trigger has to stay visible there - see the note on the
+ * hide rule below.
+ * ========================================================================== */
+
+.mobile-app-nav { display: none; }
+.bottom-nav-item.active { color: #E52321 !important; font-weight: bold; }
+
+@media (max-width: 767px) {
+  /* 60px bar + breathing room so the bar never covers the footer ad or the last
+     row of content. !important because mobiles.html sets its own body padding
+     in a page-local <style> that loads after this file. */
+  body { padding-bottom: 88px !important; }
+
+  .mobile-app-nav {
+    position: fixed !important;
+    bottom: 0 !important;
+    top: auto !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    height: 60px !important;
+    background: #ffffff !important;
+    border-top: 1px solid #e5e7eb !important;
+    display: flex !important;
+    justify-content: space-around !important;
+    align-items: center !important;
+    z-index: 99999 !important;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.08) !important;
+    padding: 0 !important;
+  }
+  .mobile-app-nav .bottom-nav-item {
+    position: relative;
+    display: flex;
+    flex: 1;
+    min-height: 48px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    color: #6B7280;
+    text-decoration: none;
+    font-size: 0.65rem;
+    font-weight: 700;
+    border-radius: 12px;
+    transition: color 0.2s ease, background 0.2s ease;
+  }
+  .mobile-app-nav .bottom-nav-item i { font-size: 1.05rem; }
+  /* The generic .bottom-nav-item.active rule above only sets `color`, which the
+     Font Awesome glyph inherits. This keeps the icon red on the same terms. */
+  .mobile-app-nav .bottom-nav-item.active i { color: #E52321 !important; }
+  .mobile-app-nav .bottom-nav-item.active::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    width: 34px;
+    height: 4px;
+    border-radius: 50px;
+    background: #E52321;
+  }
+  .mobile-app-nav .bottom-nav-item:active { background: #FEF2F2; transform: scale(0.96); }
+}
+
+
 /* Hide the top-header Menu button on mobile.
-   Only .menu-btn is listed, and that is deliberate:
+   Both triggers are listed, because both now have a bottom nav to fall back on:
      - .menu-btn is index.html's drawer trigger. Wishlist is now a direct tab in
        the bottom nav, so the drawer is no longer the only mobile route to it.
      - .mobile-menu-trigger and #menuToggle do not exist anywhere in this site.
      - .menu-trigger is the drawer trigger on mobiles.html / category.html /
-       wishlist.html and must stay visible - hiding it would leave those three
-       pages with no way to open their drawer at all.
+       wishlist.html. It was deliberately kept visible while those three pages
+       had no bottom nav; they now carry the same .mobile-app-nav as index.html,
+       so hiding it no longer strands them.
 
-   Breakpoint is 767px to match index.html's own @media (max-width: 767px) block,
-   which is what reveals the bottom nav. At 768px the bottom nav is absent, so a
-   768px hide would leave exactly one width where neither the nav nor the burger
-   is available. */
+   Breakpoint is 767px to match the @media block above that reveals the bar. At
+   768px the bottom nav is absent, so a 768px hide would leave exactly one width
+   where neither the nav nor the burger is available. */
 @media (max-width: 767px) {
-  .menu-btn { display: none !important; }
+  .menu-btn,
+  .menu-trigger { display: none !important; }
 }
 
 /* The drawer is inert until js/side-menu.js takes over, so without JS the page

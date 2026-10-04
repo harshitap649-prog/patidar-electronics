@@ -56,9 +56,60 @@
   global.PatidarNav = {
     goBack: goBack,
     hasSessionHistory: hasSessionHistory,
+    initBottomNav: initBottomNav,
     HOME: HOME
   };
 
   // Kept as a plain global for the existing inline onclick="goBack()" callers.
   global.goBack = goBack;
+
+  /* ===========================================================================
+   * Mobile bottom navigation
+   * ---------------------------------------------------------------------------
+   * mobiles.html / category.html / wishlist.html now render the same
+   * .mobile-app-nav bar as index.html, and style.css hides their .menu-trigger
+   * drawer button below 768px. This bar is therefore their only navigation, so
+   * it has to mark which page the shopper is already on.
+   *
+   * index.html keeps its own inline initializeBottomNavigation(); this file is
+   * deliberately NOT loaded there, so the two never both act on one page.
+   * ======================================================================== */
+
+  /* data-nav value -> the page it represents. */
+  var NAV_TARGETS = {
+    home: "index.html",
+    mobiles: "mobiles.html",
+    categories: "category.html",
+    wishlist: "wishlist.html"
+  };
+
+  /**
+   * Marks the tab matching the current document as active.
+   *
+   * Matching is on the file name rather than the data-nav value so that a page
+   * reached as index.html or as /index.html both resolve. The WhatsApp tab is
+   * a link out to wa.me, not a page on this site, so it is never active.
+   */
+  function initBottomNav() {
+    var items = global.document.querySelectorAll(".mobile-app-nav .bottom-nav-item");
+    if (!items.length) return;
+
+    var current = (global.location.pathname.split("/").pop() || "").toLowerCase();
+
+    Array.prototype.forEach.call(items, function (item) {
+      var target = NAV_TARGETS[item.dataset.nav];
+      var isCurrent = target === current;
+      item.classList.toggle("active", isCurrent);
+      if (isCurrent) item.setAttribute("aria-current", "page");
+      else item.removeAttribute("aria-current");
+    });
+  }
+
+  // Runs on DOMContentLoaded so the markup is parsed, and on demand for any
+  // caller that renders the bar later.
+  if (global.document.readyState === "loading") {
+    global.document.addEventListener("DOMContentLoaded", initBottomNav);
+  } else {
+    initBottomNav();
+  }
 })(window);

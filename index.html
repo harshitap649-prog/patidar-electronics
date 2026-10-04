@@ -939,14 +939,12 @@
       .reels-modal-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 16px 18px 24px; }
     }
 
-    .mobile-app-nav { display: none; }
-    .bottom-nav-item.active { color: #E52321 !important; font-weight: bold; }
-    .bottom-nav-item.active svg, .bottom-nav-item.active i { fill: #E52321 !important; stroke: #E52321 !important; }
 
     @media (max-width: 767px) {
-      /* 60px bar + the Offers FAB floating ~22px above it + breathing room, so
-         the circle never covers the last row of page content. */
-      body { padding-bottom: 88px !important; }
+      /* The bottom bar itself (.mobile-app-nav), the body padding that clears it
+         and the tab styles moved to style.css so the other three pages can share
+         them. The page-local `nav {...}` below and the "Offers" FAB rules that
+         follow stay here: they only apply to index.html. */
       nav { min-height: 60px; padding: 10px 16px; background: rgba(255,255,255,0.95); border-bottom: 1px solid #F0F0F0; backdrop-filter: blur(10px); z-index: 1000; }
       .nav-left { gap: 8px; min-width: 0; }
       .brand-logo { max-width: 150px; height: 36px; min-width: 0; flex: 0 1 auto; }
@@ -969,10 +967,6 @@
          covers it too, kept here alongside .insta-section-bar for symmetry. */
       .offer-section { scroll-margin-top: 80px; }
       .insta-section-bar { scroll-margin-top: 80px; }
-      .mobile-app-nav { position: fixed !important; bottom: 0 !important; top: auto !important; left: 0 !important; right: 0 !important; width: 100% !important; height: 60px !important; background: #ffffff !important; border-top: 1px solid #e5e7eb !important; display: flex !important; justify-content: space-around !important; align-items: center !important; z-index: 99999 !important; box-shadow: 0 -2px 10px rgba(0,0,0,0.08) !important; padding: 0 !important; }
-      .mobile-app-nav .bottom-nav-item { position: relative; display: flex; flex: 1; min-height: 48px; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #6B7280; text-decoration: none; font-size: 0.65rem; font-weight: 700; border-radius: 12px; transition: color 0.2s ease, background 0.2s ease; }
-      .mobile-app-nav .bottom-nav-item.active::before { content: ''; position: absolute; top: 2px; width: 34px; height: 4px; border-radius: 50px; background: #E52321; }
-      .mobile-app-nav .bottom-nav-item:active { background: #FEF2F2; transform: scale(0.96); }
 
       /* --- Center "Offers" FAB ---
          The bar is 60px and its items are vertically centred, so a 52px circle
@@ -1089,7 +1083,7 @@
       <div class="side-menu-sep">Visit us</div>
       <ul class="side-menu-list">
         <li><a class="side-menu-item" href="#store-location"><i class="fa-solid fa-location-dot"></i><span class="side-menu-item-label">Store Location</span></a></li>
-        <li><a class="side-menu-item" href="https://wa.me/919926702666?text=Hello%20Patidar%20Mobile%20%26%20Electronics!%20I%20am%20visiting%20your%20website%20and%20would%20like%20to%20explore%20your%20latest%20offers%20and%20products." target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i><span class="side-menu-item-label">WhatsApp Us</span></a></li>
+        <li><a class="side-menu-item" href="https://wa.me/919009909002?text=Hello%20Patidar%20Mobile%20%26%20Electronics!%20I%20am%20visiting%20your%20website%20and%20would%20like%20to%20know%20more%20about%20your%20latest%20offers%20and%20products." target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i><span class="side-menu-item-label">WhatsApp Us</span></a></li>
       </ul>
     </div>
   </div>
@@ -1178,12 +1172,12 @@
       </a>
 
       <!-- 2. Laptops & Computers -->
-      <div class="category-card">
+      <a href="category.html?type=laptops" class="category-card">
         <div class="category-image-wrapper">
           <img src="images/laptop_image-removebg-preview.png" alt="Laptops & Computers" class="category-image" loading="lazy" decoding="async">
         </div>
         <div class="category-title">Laptops & Computers</div>
-      </div>
+      </a>
 
       <!-- 3. Smart TVs & Audio -> real showroom TVs -->
       <a href="category.html?type=tvs" class="category-card">
@@ -1210,36 +1204,36 @@
       </a>
 
       <!-- 6. Air Conditioners -->
-      <div class="category-card">
+      <a href="category.html?type=ac" class="category-card">
         <div class="category-image-wrapper">
           <img src="images/AC_image-removebg-preview.png" alt="Air Conditioners" class="category-image" loading="lazy" decoding="async">
         </div>
         <div class="category-title">Air Conditioners</div>
-      </div>
+      </a>
 
       <!-- 7. Kitchen Appliances -->
-      <div class="category-card">
+      <a href="category.html?type=kitchen" class="category-card">
         <div class="category-image-wrapper">
           <img src="images/kitcgen_appliance-removebg-preview.png" alt="Kitchen Appliances" class="category-image" loading="lazy" decoding="async">
         </div>
         <div class="category-title">Kitchen Appliances</div>
-      </div>
+      </a>
 
       <!-- 8. Smartwatches & Wearables -->
-      <div class="category-card">
+      <a href="category.html?type=smartwatches" class="category-card">
         <div class="category-image-wrapper">
           <img src="images/watchee-removebg-preview.png" alt="Smartwatches & Wearables" class="category-image" loading="lazy" decoding="async">
         </div>
         <div class="category-title">Smartwatches & Wearables</div>
-      </div>
+      </a>
 
       <!-- 9. Home Furniture -->
-      <div class="category-card">
+      <a href="category.html?type=furniture" class="category-card">
         <div class="category-image-wrapper">
           <img src="images/fruniture.webp" alt="Home Furniture" class="category-image" loading="lazy" decoding="async">
         </div>
         <div class="category-title">Home Furniture</div>
-      </div>
+      </a>
 
       <!-- 10. View All / More Categories -->
       <div class="category-card view-all-card" onclick="openCategoriesModal()">
@@ -1581,7 +1575,7 @@
           </div>
           <div class="store-hours"><i class="fa-regular fa-clock"></i><span>Opening Hours: 9:00 AM - 9:00 PM</span></div>
           <div class="store-actions">
-            <a class="btn-call" href="tel:+919926762999"><i class="fa-solid fa-phone"></i> Call Showroom</a>
+            <a class="btn-call" href="tel:9009909002"><i class="fa-solid fa-phone-volume"></i> Call Showroom</a>
             <a class="btn-directions" href="https://www.google.com/maps/search/?api=1&amp;query=Sagore%20Bus%20Stand" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-location-dot"></i> Open in Google Maps</a>
           </div>
         </article>
@@ -1601,7 +1595,7 @@
           </div>
           <div class="store-hours"><i class="fa-regular fa-clock"></i><span>Opening Hours: 9:00 AM - 9:00 PM</span></div>
           <div class="store-actions">
-            <a class="btn-call" href="tel:+919926762999"><i class="fa-solid fa-phone"></i> Call Shop</a>
+            <a class="btn-call" href="tel:9926762999"><i class="fa-solid fa-phone-volume"></i> Call Shop</a>
             <a class="btn-directions" href="https://www.google.com/maps/search/?api=1&amp;query=Patidar%20Mobile%20Gallery%2C%20Sagore" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-location-dot"></i> Open in Google Maps</a>
           </div>
         </article>
@@ -1634,7 +1628,7 @@
       <span>Offers</span>
     </a>
     <a href="wishlist.html" class="bottom-nav-item" data-nav="wishlist"><i class="fa-regular fa-heart"></i><span>Wishlist</span></a>
-    <a href="https://wa.me/919926702666?text=Hello%20Patidar%20Mobile%20%26%20Electronics!%20I%20am%20visiting%20your%20website%20and%20would%20like%20to%20explore%20your%20latest%20offers%20and%20products." class="bottom-nav-item" data-nav="whatsapp" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp"></i><span>WhatsApp</span></a>
+    <a href="https://wa.me/919009909002?text=Hello%20Patidar%20Mobile%20%26%20Electronics!%20I%20am%20visiting%20your%20website%20and%20would%20like%20to%20know%20more%20about%20your%20latest%20offers%20and%20products." class="bottom-nav-item" data-nav="whatsapp" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp"></i><span>WhatsApp</span></a>
   </nav>
 
   <script>

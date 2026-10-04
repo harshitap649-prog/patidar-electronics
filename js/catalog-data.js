@@ -178,11 +178,25 @@
     { slug: "beds",             title: "Beds",               icon: "fa-bed",         blurb: "Single, double and king-size beds." },
     { slug: "tables",           title: "Tables",             icon: "fa-table",       blurb: "Dining, study and coffee tables." },
     { slug: "chairs",           title: "Chairs",             icon: "fa-chair",       blurb: "Office, dining and lounge chairs." },
-    { slug: "wardrobes",        title: "Wardrobes",          icon: "fa-box-archive", blurb: "Wardrobes and almirahs." }
+    { slug: "wardrobes",        title: "Wardrobes",          icon: "fa-box-archive", blurb: "Wardrobes and almirahs." },
+
+    /* Group entries. These hold no products of their own. They exist so the
+       "Kitchen Appliances" and "Home Furniture" cards on the index page have a
+       real ?type= to route to: without them the links fall through getCategory()
+       to null and render "Category not found" instead of the "New Stock
+       Arriving Soon" empty state that every other stocked-but-empty category
+       gets. Their real sub-categories (microwaves, induction, mixers, sofas,
+       beds, ...) stay individually addressable and are all listed in the
+       View All categories modal. */
+    { slug: "kitchen",          title: "Kitchen Appliances", icon: "fa-kitchen-set", blurb: "Microwaves, dishwashers, induction, mixers and more.", group: true },
+    { slug: "furniture",        title: "Home Furniture",     icon: "fa-couch",        blurb: "Sofas, beds, tables, chairs and wardrobes.", group: true }
   ].map(function (c) {
     // No products yet, so no card can ask for a per-category placeholder file.
     return {
       slug: c.slug, title: c.title, blurb: c.blurb, icon: c.icon,
+      // Carried through so the two grouping entries stay distinguishable from
+      // the leaf categories they cover.
+      group: !!c.group,
       products: [], comingSoon: true
     };
   });
@@ -231,7 +245,12 @@
       fridge: "refrigerators",
       "washing-machine": "washing-machines",
       washer: "washing-machines",
-      washingmachines: "washing-machines"
+      washingmachines: "washing-machines",
+      /* The catalog stores air conditioners under the short slug "ac". Accept the
+         spelled-out form too, so links written either way resolve. */
+      "air-conditioners": "ac",
+      "air-conditioner": "ac",
+      aircons: "ac"
     };
     var resolved = aliases[key] || key;
     for (var i = 0; i < categories.length; i++) {
