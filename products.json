@@ -145,7 +145,7 @@
     "specs": "8+128GB",
     "price": 23999,
     "colors": "",
-    "image": "",
+    "image": "https://fdn2.gsmarena.com/vv/bigpic/oppo-f25-pro.jpg",
     "imageFallback": "",
     "slug": "oppo-f25-pro-5g"
   },
@@ -155,7 +155,7 @@
     "specs": "8+256GB",
     "price": 25999,
     "colors": "",
-    "image": "",
+    "image": "https://fdn2.gsmarena.com/vv/bigpic/oppo-f25-pro.jpg",
     "imageFallback": "",
     "slug": "oppo-f25-pro-5g"
   },
@@ -165,7 +165,7 @@
     "specs": "8+128GB",
     "price": 22999,
     "colors": "",
-    "image": "",
+    "image": "https://fdn2.gsmarena.com/vv/bigpic/oppo-f27.jpg",
     "imageFallback": "",
     "slug": "oppo-f27-5g"
   },
@@ -175,7 +175,7 @@
     "specs": "8+256GB",
     "price": 24999,
     "colors": "",
-    "image": "",
+    "image": "https://fdn2.gsmarena.com/vv/bigpic/oppo-f27.jpg",
     "imageFallback": "",
     "slug": "oppo-f27-5g"
   },
@@ -185,7 +185,7 @@
     "specs": "8+128GB",
     "price": 27999,
     "colors": "",
-    "image": "",
+    "image": "https://fdn2.gsmarena.com/vv/bigpic/oppo-f27.jpg",
     "imageFallback": "",
     "slug": "oppo-f27-pro-5g"
   },
@@ -195,7 +195,7 @@
     "specs": "8+256GB",
     "price": 29999,
     "colors": "",
-    "image": "",
+    "image": "https://fdn2.gsmarena.com/vv/bigpic/oppo-f27.jpg",
     "imageFallback": "",
     "slug": "oppo-f27-pro-5g"
   },
@@ -245,7 +245,7 @@
     "specs": "8+128GB",
     "price": 30999,
     "colors": "",
-    "image": "",
+    "image": "assets/images/products/oppo-reno-12-pro-5g.jpg",
     "imageFallback": "",
     "slug": "oppo-reno-12-pro-mini-5g"
   },
@@ -255,7 +255,7 @@
     "specs": "8+256GB",
     "price": 32999,
     "colors": "",
-    "image": "",
+    "image": "assets/images/products/oppo-reno-12-pro-5g.jpg",
     "imageFallback": "",
     "slug": "oppo-reno-12-pro-mini-5g"
   },

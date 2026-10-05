@@ -64,8 +64,8 @@ function splitArgs(src, openParen) {
   return { args, end: -1 };
 }
 
-/** "Black/White" -> Black/White ; ["a","b"] -> ["a","b"] */
-function parseColors(raw) {
+/** "Black/White" -> Black/White ; ["a","b"] -> ["a","b"] ; "" -> "" */
+function parseVariantValue(raw) {
   const text = String(raw == null ? "" : raw).trim();
   if (!text) return "";
   if (text[0] !== "[") return text.replace(/^["'`]|["'`]$/g, "");
@@ -92,9 +92,11 @@ function parseProducts(html) {
 
     const brand = args[0].trim().replace(/^["'`]|["'`]$/g, "");
     const model = args[1].trim().replace(/^["'`]|["'`]$/g, "");
-    const colors = parseColors(args[3]);
-    const image = (args[4] || "").trim().replace(/^["'`]|["'`]$/g, "");
-    const imageFallback = (args[5] || "").trim().replace(/^["'`]|["'`]$/g, "");
+    const colors = parseVariantValue(args[3]);
+    // image / imageFallback may each be one string for every variant, or an array
+    // with one entry per variant - mirrors addProduct() in mobiles.html.
+    const image = parseVariantValue(args[4]);
+    const imageFallback = parseVariantValue(args[5]);
 
     let variants;
     try { variants = JSON.parse(args[2].trim()); } catch (err) { continue; }
@@ -110,8 +112,8 @@ function parseProducts(html) {
         specs: variant[0],
         price: variant[1],
         colors: Array.isArray(colors) ? (colors[index] || "") : colors,
-        image,
-        imageFallback,
+        image: Array.isArray(image) ? (image[index] || "") : image,
+        imageFallback: Array.isArray(imageFallback) ? (imageFallback[index] || "") : imageFallback,
         slug
       });
     });

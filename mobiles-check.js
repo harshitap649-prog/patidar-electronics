@@ -191,12 +191,60 @@
       }
     }
 
+    // Mirrors mobiles.html's compare modal. NOTE: this harness is stale and is
+    // loaded by no page - its addProduct() still takes 4 args (no image /
+    // imageFallback) and its colours have drifted from the real catalogue. Only
+    // the alert was changed so a native dialog cannot survive here; the guard
+    // keeps this safe to run standalone, where the modal markup does not exist.
+    function showCompareModal(labels) {
+      const modal = document.getElementById("compareModal");
+      if (!modal) return false;
+      const body = document.getElementById("compareModalBody");
+      const whatsappBtn = document.getElementById("whatsappCompareBtn");
+      if (!body || !whatsappBtn) return false;
+
+      body.textContent = "";
+      if (!labels.length) {
+        const empty = document.createElement("p");
+        empty.className = "compare-modal-empty";
+        empty.textContent = "No products selected for comparison.";
+        body.appendChild(empty);
+        whatsappBtn.hidden = true;
+      } else {
+        labels.forEach(function (label) {
+          const chip = document.createElement("div");
+          chip.className = "compare-item-chip";
+          chip.textContent = label;
+          body.appendChild(chip);
+        });
+        whatsappBtn.href =
+          "https://wa.me/919009909002?text=" +
+          encodeURIComponent(
+            "Hello Patidar Mobile & Electronics! I want to compare these products:\n" +
+              labels.join("\n")
+          );
+        whatsappBtn.hidden = false;
+      }
+
+      modal.classList.add("active");
+      modal.setAttribute("aria-hidden", "false");
+      document.documentElement.style.overflow = "hidden";
+      return true;
+    }
+
     function toggleCompare() {
       if (selectedForCompare.size === 0) return;
-      // In a real app, this would navigate to a comparison page
-      alert(`Compare selected products:\n${Array.from(selectedForCompare).map(i => 
-        `${filteredProducts[i].brand} ${filteredProducts[i].model} (${filteredProducts[i].specs})`
-      ).join('\n')}`);
+      const labels = Array.from(selectedForCompare)
+        .map(function (i) {
+          const p = filteredProducts[i];
+          return p ? `${p.brand} ${p.model} (${p.specs})` : "";
+        })
+        .filter(Boolean);
+      // Without the modal markup (standalone run) fall back to the old box
+      // rather than silently doing nothing.
+      if (!showCompareModal(labels)) {
+        alert(`Compare selected products:\n${labels.join("\n")}`);
+      }
     }
 
     // --- Go Back ---

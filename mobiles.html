@@ -576,9 +576,10 @@
 
     /* --- Responsive Adjustments --- */
     @media (max-width: 500px) {
-      /* Superseded by style.css's `body { padding-bottom: 88px !important }`,
-         which reserves room for the fixed bottom nav. Kept as a no-op comment
-         rather than a live rule so the two cannot disagree. */
+      /* The bottom nav is index.html-only now, so the body padding that reserved
+         room for it is scoped to body.home-page in style.css and no longer
+         reaches this page. Its own 70px (see the base body rule) stands. Kept
+         as a comment rather than a live rule so the two cannot disagree. */
       
       .header {
         padding: 10px 12px;
@@ -769,8 +770,11 @@
     function addProduct(brand, model, variants, colors, image = "", imageFallback = "") {
       variants.forEach(([specs, price], index) => products.push({
         brand, model, specs, price, colors: Array.isArray(colors) ? colors[index] : colors,
-        image: image,
-        imageFallback: imageFallback,
+        // image / imageFallback accept either one string for every variant, or an
+        // array with one entry per variant - the same per-variant shape `colors`
+        // already had. Needed where the two capacities ship different photography.
+        image: Array.isArray(image) ? (image[index] || "") : image,
+        imageFallback: Array.isArray(imageFallback) ? (imageFallback[index] || "") : imageFallback,
         slug: `${brand}-${model}`.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
       }));
     }
@@ -809,12 +813,34 @@
 
     addProduct("Oppo", "A60 4G", [["4+64GB", 14599], ["4+128GB", 15599], ["6+128GB", 17599]], "", "assets/images/products/oppo-a60-4g.jpg");
     addProduct("Oppo", "A58", [["6+128GB", 13999]], "", "assets/images/products/oppo-a58.jpg");
-    addProduct("Oppo", "F25 Pro 5G", [["8+128GB", 23999], ["8+256GB", 25999]], "");
-    addProduct("Oppo", "F27 5G", [["8+128GB", 22999], ["8+256GB", 24999]], "");
-    addProduct("Oppo", "F27 Pro+ 5G", [["8+128GB", 27999], ["8+256GB", 29999]], "");
+    // Official GSMArena studio render (verified: a genuine OPPO F25 Pro, front + back).
+    // The filename carries no "-5g" suffix - bigpic/oppo-f25-pro-5g.jpg 404s, which is
+    // the same shape as the F27s (oppo-f27-5g.jpg 404s, oppo-f27.jpg resolves).
+    // As with the F27, the published asset is only 160x212, below this project's own
+    // MIN_EDGE=300 in fetch_product_images.py, so it reads soft on a wide desktop card.
+    addProduct("Oppo", "F25 Pro 5G", [["8+128GB", 23999], ["8+256GB", 25999]], "",
+      "https://fdn2.gsmarena.com/vv/bigpic/oppo-f25-pro.jpg");
+    // Official GSMArena studio render (verified: a genuine OPPO F27, front + back).
+//   - the published asset is only 160x212, below this project's own MIN_EDGE=300
+    //     in fetch_product_images.py, so it reads soft on a wide desktop card. It is
+    //     still the correct handset, which generic stock photography is not.
+    //   - GSMArena publishes no bigpic for the F27 Pro+ (probed ~25 name variants
+    //     across fdn2/fdn1/fdn in both bigpic and gpic, plus ID forms 13118-13260),
+    //     so that model borrows this same-series render rather than show a different
+    //     handset. Swap both the moment a full-size render is available.
+    // Both capacities share one image, so this is a plain string, not an array.
+    addProduct("Oppo", "F27 5G", [["8+128GB", 22999], ["8+256GB", 24999]], "",
+      "https://fdn2.gsmarena.com/vv/bigpic/oppo-f27.jpg");
+    addProduct("Oppo", "F27 Pro+ 5G", [["8+128GB", 27999], ["8+256GB", 29999]], "",
+      "https://fdn2.gsmarena.com/vv/bigpic/oppo-f27.jpg");
     addProduct("Oppo", "Reno 12 5G", [["8+256GB", 32999], ["12+256GB", 35999]], "", "assets/images/products/oppo-reno-12-5g.jpg");
     addProduct("Oppo", "Reno 12 Pro 5G", [["12+256GB", 36999], ["12+512GB", 40999]], "", "assets/images/products/oppo-reno-12-pro-5g.jpg");
-    addProduct("Oppo", "Reno 12 Pro Mini 5G", [["8+128GB", 30999], ["8+256GB", 32999]], "");
+    // Reno 12 Pro Mini has no published press render reachable from an allow-listed
+    // host (image_sources.json -> null; the OPPO product URL 404s and GSMArena has no
+    // page for it), so it borrows the Reno 12 Pro shot. Same series and brand, but a
+    // different model - swap this the moment a genuine image is available.
+    addProduct("Oppo", "Reno 12 Pro Mini 5G", [["8+128GB", 30999], ["8+256GB", 32999]], "",
+      "assets/images/products/oppo-reno-12-pro-5g.jpg");
     addProduct("Oppo", "Reno 13 5G", [["12+256GB", 37999]], "", "assets/images/products/oppo-reno-13-5g.jpg");
     addProduct("Oppo", "Reno 13 Pro 5G", [["12+256GB", 44999], ["12+512GB", 49999]], "", "assets/images/products/oppo-reno-13-pro-5g.jpg");
     addProduct("Oppo", "Find X8 5G", [["12+256GB", 64999], ["12+512GB", 69999]], "", "assets/images/products/oppo-find-x8-5g.jpg");
@@ -1169,13 +1195,110 @@
       }
     }
 
+    // --- Compare modal ------------------------------------------------------
+    // Replaces the old alert(): same data, but as a dismissible dialog with a
+    // WhatsApp hand-off instead of a dead-end OK button. Labels are built with
+    // createElement/textContent rather than innerHTML so a product name can never
+    // inject markup.
+    function compareSelectionLabels() {
+      return Array.from(selectedForCompare)
+        .map(function (i) {
+          const p = filteredProducts[i];
+          return p ? `${p.brand} ${p.model} (${p.specs})` : "";
+        })
+        .filter(Boolean);
+    }
+
+    function showCompareModal(labels) {
+      const modal = document.getElementById("compareModal");
+      const body = document.getElementById("compareModalBody");
+      const whatsappBtn = document.getElementById("whatsappCompareBtn");
+      if (!modal || !body || !whatsappBtn) return;
+
+      body.textContent = "";
+      if (!labels.length) {
+        const empty = document.createElement("p");
+        empty.className = "compare-modal-empty";
+        empty.textContent = "No products selected for comparison.";
+        body.appendChild(empty);
+        whatsappBtn.hidden = true;
+      } else {
+        labels.forEach(function (label) {
+          const chip = document.createElement("div");
+          chip.className = "compare-item-chip";
+          chip.textContent = label;
+          body.appendChild(chip);
+        });
+        whatsappBtn.href =
+          "https://wa.me/919009909002?text=" +
+          encodeURIComponent(
+            "Hello Patidar Mobile & Electronics! I want to compare these products:\n" +
+              labels.join("\n")
+          );
+        whatsappBtn.hidden = false;
+      }
+
+      modal.classList.add("active");
+      modal.setAttribute("aria-hidden", "false");
+      // Same scroll lock js/side-menu.js uses, so the page behind cannot move.
+      document.documentElement.style.overflow = "hidden";
+      const closeBtn = document.getElementById("closeCompareModal");
+      if (closeBtn) closeBtn.focus();
+    }
+
+    function hideCompareModal() {
+      const modal = document.getElementById("compareModal");
+      if (!modal) return;
+      modal.classList.remove("active");
+      modal.setAttribute("aria-hidden", "true");
+      document.documentElement.style.overflow = "";
+      const compareBtn = document.getElementById("compareBtn");
+      if (compareBtn && !compareBtn.disabled) compareBtn.focus();
+    }
+
+    // "Clear All" empties the selection. The Set alone is not enough: the cards
+    // are re-rendered from filteredProducts on every search/filter/sort, so the
+    // checkboxes are un-ticked by index to keep the UI telling the truth.
+    function clearCompareSelection() {
+      document
+        .querySelectorAll("#productsGrid .compare-checkbox:checked")
+        .forEach(function (box) {
+          box.checked = false;
+          box.dispatchEvent(new Event("change", { bubbles: true }));
+        });
+      selectedForCompare.clear();
+      updateCompareBtn();
+    }
+
     function toggleCompare() {
       if (selectedForCompare.size === 0) return;
-      // In a real app, this would navigate to a comparison page
-      alert(`Compare selected products:\n${Array.from(selectedForCompare).map(i => 
-        `${filteredProducts[i].brand} ${filteredProducts[i].model} (${filteredProducts[i].specs})`
-      ).join('\n')}`);
+      showCompareModal(compareSelectionLabels());
     }
+
+    // Close paths: the X, a click on the backdrop itself, and Escape. Escape is
+    // the one keyboard affordance the spec omitted and the one a modal without
+    // it strands keyboard users on.
+    document.addEventListener("DOMContentLoaded", function () {
+      const modal = document.getElementById("compareModal");
+      const closeBtn = document.getElementById("closeCompareModal");
+      if (!modal || !closeBtn) return;
+      closeBtn.addEventListener("click", hideCompareModal);
+      modal.addEventListener("click", function (e) {
+        if (e.target === modal) hideCompareModal();
+      });
+      const clearBtn = document.getElementById("clearCompareBtn");
+      if (clearBtn) {
+        clearBtn.addEventListener("click", function () {
+          clearCompareSelection();
+          // Re-render in place rather than closing, so the shopper can see the
+          // "nothing selected" state the modal actually reaches.
+          showCompareModal([]);
+        });
+      }
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && modal.classList.contains("active")) hideCompareModal();
+      });
+    });
 
     // Back navigation lives in js/nav.js (window.goBack) so all three pages
     // behave identically.
@@ -1309,6 +1432,24 @@
     <a href="wishlist.html" class="bottom-nav-item" data-nav="wishlist"><i class="fa-regular fa-heart"></i><span>Wishlist</span></a>
     <a href="https://wa.me/919009909002?text=Hello%20Patidar%20Mobile%20%26%20Electronics!%20I%20am%20visiting%20your%20website%20and%20would%20like%20to%20know%20more%20about%20your%20latest%20offers%20and%20products." class="bottom-nav-item" data-nav="whatsapp" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp"></i><span>WhatsApp</span></a>
   </nav>
+
+  <!-- Compare modal. Replaces the old alert(); markup lives here, behaviour in
+       the showCompareModal/hideCompareModal pair below, styling in style.css. -->
+  <div id="compareModal" class="compare-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="compareModalTitle" aria-hidden="true">
+    <div class="compare-modal-card">
+      <div class="compare-modal-header">
+        <h3 id="compareModalTitle"><i class="fa-solid fa-scale-balanced"></i> Compare Products</h3>
+        <button id="closeCompareModal" class="modal-close-btn" type="button" aria-label="Close comparison">&times;</button>
+      </div>
+      <div id="compareModalBody" class="compare-modal-body"></div>
+      <div class="compare-modal-footer">
+        <button id="clearCompareBtn" class="btn-secondary" type="button">Clear All</button>
+        <a id="whatsappCompareBtn" href="#" target="_blank" rel="noopener" class="btn-primary" hidden>
+          <i class="fa-brands fa-whatsapp"></i> Inquire Selected on WhatsApp
+        </a>
+      </div>
+    </div>
+  </div>
 
   <script src="js/ads.js"></script>
 </body>

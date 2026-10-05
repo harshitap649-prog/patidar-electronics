@@ -71,6 +71,40 @@
     /* --- Main --- */
     .main-container { max-width: 1400px; margin: 0 auto; padding: 20px 16px; }
 
+    /* --- Wishlist search ---
+       Same field as mobiles.html .search-input, same values, so the two pages
+       read identically. Lives in this <style> rather than inline on the element
+       because every other rule here is token-driven (--text-dark, --primary-red)
+       and a hard-coded inline style is what let these pages drift apart before. */
+    .search-wrapper {
+      position: relative;
+      margin-bottom: 12px;
+    }
+    .search-input {
+      width: 100%;
+      padding: 10px 16px;
+      border: 1px solid #D1D5DB;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      background: #F3F4F6;
+      color: var(--text-dark);
+      transition: all 0.2s;
+    }
+    .search-input:focus {
+      outline: none;
+      background: var(--card-white);
+      border-color: var(--primary-red);
+    }
+    /* Shown when a query hides every card. Separate from .empty-state, which
+       means "nothing saved at all" - saying "your wishlist is empty" while items
+       are merely filtered out would be a lie. */
+    .no-matches {
+      text-align: center;
+      padding: 48px 20px;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
     .results-meta {
       display: flex; align-items: center; justify-content: space-between; gap: 10px;
       margin-bottom: 12px; font-size: 0.85rem; color: var(--text-muted); flex-wrap: wrap;
@@ -200,6 +234,8 @@
 
     /* --- Responsive (mirrors mobiles.html / category.html tap targets) --- */
     @media (max-width: 767px) {
+      /* Same 48px touch target mobiles.html gives its search field. */
+      .search-input { min-height: 48px; border-radius: 12px; }
       .products-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
       .product-card { min-width: 0; }
     }
@@ -268,6 +304,10 @@
   <div class="side-menu-overlay" data-menu-close hidden></div>
 
   <div class="main-container">
+    <div class="search-wrapper">
+      <input type="text" class="search-input" id="wishlistSearch" placeholder="Search saved items by model name..." autocomplete="off" aria-label="Search saved wishlist items">
+    </div>
+
     <div class="results-meta">
       <span id="resultCount"></span>
       <button class="clear-all" id="clearAll" type="button" style="display:none;">
@@ -276,6 +316,13 @@
     </div>
 
     <div class="products-grid" id="productsGrid"></div>
+
+    <!-- Query hid every card. Distinct from #emptyState ("nothing saved at all");
+         render()/applyWishlistFilter() decide which of the two is visible. -->
+    <div class="no-matches" id="noMatches" style="display: none;">
+      <i class="fa-solid fa-magnifying-glass" style="color: var(--border-color); font-size: 2rem; display: block; margin-bottom: 12px;"></i>
+      No saved item matches your search.
+    </div>
 
     <!-- Static markup (not built by JS): render() only toggles this node's display.
          The CTA points at the home page's category grid rather than mobiles.html,
@@ -306,6 +353,8 @@
       var emptyState  = document.getElementById("emptyState");
       var resultCount = document.getElementById("resultCount");
       var clearAll    = document.getElementById("clearAll");
+      var wishlistSearch = document.getElementById("wishlistSearch");
+      var noMatches   = document.getElementById("noMatches");
 
       /* Showroom ids are the catalog's own `id`; build the lookup once. */
       var showroomById = {};
@@ -444,6 +493,45 @@
         );
       }
 
+      /* --- Live search over the saved items ---------------------------------
+         render() above REBUILDS grid.innerHTML, so any display:none this
+         function sets is wiped on every wishlist change (and on the very first
+         paint). That is why applyWishlistFilter() is called from inside
+         render() as well as from the input listener - a listener-only filter
+         silently un-filters itself the moment a heart is tapped elsewhere.
+
+         Selectors are the page's real ones: the grid is #productsGrid
+         (.products-grid) and the title is .product-name. There is no
+         .wishlist-items-grid or .product-title class anywhere in this project.
+         data-product-id is matched too, so a shopper can paste the id they see
+         in localStorage. */
+      function applyWishlistFilter() {
+        var q = wishlistSearch ? wishlistSearch.value.toLowerCase().trim() : "";
+        var cards = grid.querySelectorAll(".product-card");
+        var shown = 0;
+        var i, card, nameEl, hay, match;
+
+        for (i = 0; i < cards.length; i++) {
+          card = cards[i];
+          nameEl = card.querySelector(".product-name");
+          hay = ((nameEl ? nameEl.textContent : "") + " " +
+                 (card.getAttribute("data-product-id") || "")).toLowerCase();
+          match = !q || hay.indexOf(q) !== -1;
+          card.style.display = match ? "" : "none";
+          if (match) shown++;
+        }
+
+        // Only claim "no matches" when the wishlist actually holds something;
+        // otherwise #emptyState ("nothing saved") is the truthful message.
+        if (noMatches) {
+          noMatches.style.display = (q && shown === 0 && cards.length > 0) ? "block" : "none";
+        }
+      }
+
+      if (wishlistSearch) {
+        wishlistSearch.addEventListener("input", applyWishlistFilter);
+      }
+
       function render() {
         var ids = WL ? WL.all() : [];
         var html = [];
@@ -464,6 +552,10 @@
           ? "<strong>" + ids.length + "</strong> item" + (ids.length === 1 ? "" : "s") + " saved" +
             (missing ? " (" + missing + " no longer in stock)" : "")
           : "Nothing saved yet";
+
+        // Re-apply last because the line above replaced every card, discarding
+        // whatever display the previous filter had set on them.
+        applyWishlistFilter();
       }
 
       /* Image fallback chain (local -> vendor -> placeholder). Capture-phase
@@ -497,6 +589,9 @@
           if (!window.confirm("Remove all " + n + " saved item" + (n === 1 ? "" : "s") +
               " from your wishlist?")) return;
           for (var i = 0; i < ids.length; i++) WL.remove(ids[i]);
+          // Drop the query too, otherwise the field still holds a term that can
+          // never match again and reads as if the clear failed.
+          if (wishlistSearch) wishlistSearch.value = "";
           render();
         });
       }
